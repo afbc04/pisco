@@ -1,0 +1,88 @@
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes editor-pop {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.98); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.editor-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    z-index: 1055;
+    animation: fade-in 0.15s ease;
+}
+
+.editor-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(1040px, calc(100vw - 3rem));
+    height: min(720px, calc(100vh - 3rem));
+    background: var(--surface);
+    border-radius: 0.75rem;
+    box-shadow: var(--overlay-shadow);
+    z-index: 1056;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: editor-pop 0.16s ease;
+}
+
+.editor-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--divider);
+}
+
+.editor-modal-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.editor-close {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.05rem 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.editor-close:hover {
+    background: var(--primary-tint);
+    color: var(--primary);
+}
+
+.editor-modal-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.editor-content {
+    flex: 1 1 auto;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+@media (max-width: 767.98px) {
+    .editor-modal {
+        top: 0;
+        left: 0;
+        transform: none;
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        animation: fade-in 0.15s ease;
+    }
+}

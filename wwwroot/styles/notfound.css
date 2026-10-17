@@ -1,0 +1,12 @@
+.notfound {
+    padding: 3rem;
+}
+
+.notfound h1 {
+    margin: 0 0 0.25rem;
+    font-size: 2rem;
+}
+
+.notfound p {
+    color: var(--muted);
+}

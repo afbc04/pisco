@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Logout" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Nav_ToggleSidebar" xml:space="preserve">
+    <value>Collapse / expand</value>
+  </data>
+  <data name="Nav_PinSidebar" xml:space="preserve">
+    <value>Pin sidebar</value>
+  </data>
+  <data name="Error_Unhandled" xml:space="preserve">
+    <value>An unhandled error has occurred.</value>
+  </data>
+  <data name="Error_Reload" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="NotFound_Title" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="NotFound_Body" xml:space="preserve">
+    <value>This page doesn't exist.</value>
+  </data>
+  <data name="NotFound_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Sign in to continue.</value>
+  </data>
+  <data name="Login_InvalidCredentials" xml:space="preserve">
+    <value>Invalid credentials.</value>
+  </data>
+  <data name="Login_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Domain_Name_Empty" xml:space="preserve">
+    <value>The name can't be empty</value>
+  </data>
+  <data name="Domain_Name_TooLong" xml:space="preserve">
+    <value>The name is too long (max {0})</value>
+  </data>
+  <data name="Domain_Workspace_NotFound" xml:space="preserve">
+    <value>The wallet doesn't exist</value>
+  </data>
+  <data name="Nav_Theme" xml:space="preserve">
+    <value>Toggle light / dark</value>
+  </data>
+  <data name="SideNav_CurrentWorkspace" xml:space="preserve">
+    <value>Current workspace</value>
+  </data>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>Hello, {0}</value>
+  </data>
+  <data name="Home_Workspace" xml:space="preserve">
+    <value>Workspace: {0}</value>
+  </data>
+  <data name="Ws_None" xml:space="preserve">
+    <value>No workspace</value>
+  </data>
+  <data name="Ws_Pick_Title" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Ws_Pick_Empty" xml:space="preserve">
+    <value>You don't have access to any workspace yet. Ask the administrator to add you to one.</value>
+  </data>
+  <data name="Ws_IsDemo" xml:space="preserve">
+    <value>Demo</value>
+  </data>
+  <data name="Nav_Login" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="UserType_Admin" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="UserType_User" xml:space="preserve">
+    <value>User</value>
+  </data>
+</root>

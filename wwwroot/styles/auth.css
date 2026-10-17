@@ -1,0 +1,50 @@
+.auth-shell {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow: hidden;
+    background: #0a1a45;
+}
+
+.auth-card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    --bs-card-bg: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1.5rem 3rem var(--shadow);
+    animation:
+        rise 0.8s ease-out both,
+        float 6s ease-in-out 0.8s infinite alternate;
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-card {
+        animation: none;
+    }
+}
+
+.auth-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.15rem;
+}
+
+.auth-sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 1rem;
+}

@@ -1,0 +1,69 @@
+.app-shell {
+    min-height: 100vh;
+}
+
+.sidebar-cb {
+    position: absolute;
+}
+
+.shell-body {
+    margin-left: var(--sidebar-w);
+    min-height: 100vh;
+    transition: margin-left 0.25s ease;
+}
+
+.content {
+    padding: 1.75rem 2vw 2.5rem;
+}
+
+@media (min-width: 992px) {
+    #sidebar-collapse:checked ~ .shell-body {
+        margin-left: var(--sidebar-w-collapsed);
+    }
+
+    #sidebar-pin:checked ~ .shell-body {
+        margin-left: var(--sidebar-w);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .shell-body {
+        margin-left: 0;
+    }
+
+    .content {
+        padding: calc(var(--navbar-h) + 1.25rem) 1rem 2rem;
+    }
+
+    .drawer-scrim {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--scrim);
+        z-index: 1045;
+    }
+
+    #sidebar-collapse:checked ~ .shell-body .drawer-scrim {
+        display: block;
+    }
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1060;
+    padding: 0.6rem 1.25rem 0.7rem;
+    background: color-mix(in srgb, var(--warning) 20%, var(--bg));
+    color: var(--heading);
+    box-shadow: var(--panel-shadow);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}

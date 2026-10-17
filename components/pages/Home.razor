@@ -1,0 +1,35 @@
+@page "/"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject IStringLocalizer<Resources> L
+
+<PageTitle>Pisco</PageTitle>
+
+<h1>@(userName is null ? "Pisco" : L["Home_Welcome", userName])</h1>
+<p class="text-muted">
+    @if (WsState.Current is { } ws)
+    {
+        @L["Home_Workspace", ws.Name]
+    }
+    else
+    {
+        @L["Ws_Pick_Empty"]
+    }
+</p>
+
+@code {
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += OnWsChanged;
+        userName = (await AuthProvider.GetAuthenticationStateAsync()).User.Identity?.Name;
+        await WsState.EnsureLoadedAsync();
+    }
+
+    private void OnWsChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => WsState.Changed -= OnWsChanged;
+}

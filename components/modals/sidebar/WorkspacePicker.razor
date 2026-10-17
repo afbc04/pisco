@@ -1,0 +1,49 @@
+@inject IStringLocalizer<Resources> L
+@inject WorkspaceState WsState
+
+<EntryModal Title="@L["Ws_Pick_Title"]" OnClose="OnClose">
+    @if (error is not null)
+    {
+        <div class="alert alert-danger py-2 small">@error</div>
+    }
+    @if (accessible.Count == 0)
+    {
+        <p class="text-muted mb-0">@L["Ws_Pick_Empty"]</p>
+    }
+    <div class="ws-list">
+        @foreach (var ws in accessible)
+        {
+            <button type="button" class="ws-option @(WsState.Current?.Id == ws.Id ? "is-active" : null)"
+                    @onclick="() => SelectWorkspace(ws.Id)">
+                <span class="ws-option-name">@ws.Name</span>
+                @if (ws.IsDemo)
+                {
+                    <span class="badge text-bg-warning">@L["Ws_IsDemo"]</span>
+                }
+            </button>
+        }
+    </div>
+</EntryModal>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private List<Workspace> accessible = [];
+    private string? error;
+
+    protected override async Task OnInitializedAsync() =>
+        accessible = await WsState.ListAccessibleAsync();
+
+    private async Task SelectWorkspace(long id)
+    {
+        try
+        {
+            await WsState.SelectAsync(id);
+            await OnClose.InvokeAsync();
+        }
+        catch (DomainException ex)
+        {
+            error = L[ex.Message, ex.Args];
+        }
+    }
+}

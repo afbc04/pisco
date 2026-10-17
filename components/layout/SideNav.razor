@@ -1,0 +1,119 @@
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Globalization
+
+@inject IStringLocalizer<Resources> R
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+@inject WorkspaceState WsState
+
+<header class="mobilebar">
+    <label for="sidebar-collapse" class="mobilebar-btn">&#9776;</label>
+    <img class="mobilebar-logo" src="img/boria.jpg" alt="" />
+    <span class="mobilebar-brand">
+        <span class="mobilebar-title">Pisco</span>
+        @WorkspaceLabel
+    </span>
+    @if (signedIn)
+    {
+        <span class="mobilebar-user" title="@myName">
+            <span class="mobilebar-user-name">@myName</span>
+            <span class="sidenav-avatar">@Initial(myName)</span>
+        </span>
+    }
+    else
+    {
+        <a class="mobilebar-login" href="/login">@R["Nav_Login"]</a>
+    }
+</header>
+
+<aside class="sidenav">
+    <div class="sidenav-brand">
+        <img class="sidenav-logo" src="img/boria.jpg" alt="" />
+        <span class="sidenav-brand-text">
+            <span class="sidenav-title">Pisco</span>
+            @WorkspaceLabel
+        </span>
+    </div>
+
+    <nav class="sidenav-main">
+        <NavLink class="sidenav-tab" href="" Match="NavLinkMatch.All" ActiveClass="is-active">@R["Nav_Home"]</NavLink>
+    </nav>
+
+    <div class="sidenav-foot">
+        @if (!signedIn)
+        {
+            <a class="sidenav-login" href="/login">@R["Nav_Login"]</a>
+        }
+        else
+        {
+            <div class="sidenav-user">
+                <span class="sidenav-avatar">@Initial(myName)</span>
+                <span class="sidenav-who">
+                    <span class="sidenav-user-name">@myName</span>
+                    <span class="sidenav-user-type">@R[isAdmin ? "UserType_Admin" : "UserType_User"]</span>
+                </span>
+                <form method="post" action="/auth/logout">
+                    <button type="submit" class="sidenav-icon-btn" title="@R["Nav_Logout"]">&#9099;</button>
+                </form>
+            </div>
+        }
+
+        <div class="sidenav-controls">
+            <button type="button" class="sidenav-ctl sidenav-theme" onclick="toggleTheme()" title="@R["Nav_Theme"]"></button>
+            <div class="sidenav-lang">
+                <a href="/culture/set?culture=pt&redirectUri=@ReturnPath" data-enhance-nav="false" class="@(IsPt ? "is-active" : null)">PT</a>
+                <span class="sep">·</span>
+                <a href="/culture/set?culture=en&redirectUri=@ReturnPath" data-enhance-nav="false" class="@(IsPt ? null : "is-active")">EN</a>
+            </div>
+            <label for="sidebar-pin" class="sidenav-ctl sidenav-pin" title="@R["Nav_PinSidebar"]"></label>
+            <label for="sidebar-collapse" class="sidenav-ctl sidenav-collapse" title="@R["Nav_ToggleSidebar"]"></label>
+        </div>
+    </div>
+</aside>
+
+@if (pickerOpen)
+{
+    <WorkspacePicker OnClose="() => pickerOpen = false" />
+}
+
+@code {
+    private bool IsPt => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "pt";
+    private string ReturnPath => Uri.EscapeDataString("/" + Nav.ToBaseRelativePath(Nav.Uri));
+
+    private static string Initial(string? name) =>
+        string.IsNullOrWhiteSpace(name) ? "?" : name.Trim()[..1].ToUpperInvariant();
+
+    private RenderFragment WorkspaceLabel => @<text>
+        @if (signedIn)
+        {
+            <button type="button" class="sidenav-ws" title="@R["SideNav_CurrentWorkspace"]" @onclick="() => pickerOpen = true">
+                @(WsState.Current?.Name ?? R["Ws_None"])
+            </button>
+        }
+        else
+        {
+            <span class="sidenav-ws">@(WsState.Current?.Name ?? R["Ws_None"])</span>
+        }
+    </text>;
+
+    private bool signedIn;
+    private bool isAdmin;
+    private string myName = "";
+
+    private bool pickerOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += OnWsChanged;
+        var user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        signedIn = user.Identity?.IsAuthenticated == true;
+        isAdmin = user.IsAdmin();
+        myName = user.Identity?.Name ?? "";
+        await WsState.EnsureLoadedAsync();
+    }
+
+    private void OnWsChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => WsState.Changed -= OnWsChanged;
+}

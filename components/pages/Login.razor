@@ -1,0 +1,31 @@
+@page "/login"
+@layout AuthLayout
+@inject IStringLocalizer<Resources> L
+
+<PageTitle>@L["Login_Submit"]</PageTitle>
+
+<h1 class="auth-title">Pisco</h1>
+<p class="auth-sub">@L["Login_Subtitle"]</p>
+
+@if (Error is not null)
+{
+    <div class="alert alert-danger py-2">@L["Login_InvalidCredentials"]</div>
+}
+
+<form method="post" action="/auth/login">
+    <AntiforgeryToken />
+    <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+
+    <label class="form-label small mb-1">@L["Login_Username"]</label>
+    <input class="form-control mb-2" name="username" autocomplete="username" required autofocus />
+
+    <label class="form-label small mb-1">@L["Login_Password"]</label>
+    <input class="form-control mb-3" type="password" name="password" autocomplete="current-password" required />
+
+    <button class="btn btn-primary w-100" type="submit">@L["Login_Submit"]</button>
+</form>
+
+@code {
+    [SupplyParameterFromQuery] public string? Error { get; set; }
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+}

@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+@inject IStringLocalizer<Resources> L
+
+<div class="app-shell">
+    <input type="checkbox" id="sidebar-pin" class="sidebar-cb" hidden />
+    <input type="checkbox" id="sidebar-collapse" class="sidebar-cb" hidden />
+
+    <div class="shell-body">
+        <SideNav />
+        <label for="sidebar-collapse" class="drawer-scrim" aria-hidden="true"></label>
+        <main class="content">
+            @Body
+        </main>
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    @L["Error_Unhandled"]
+    <a href="" class="reload">@L["Error_Reload"]</a>
+    <a class="dismiss">🗙</a>
+</div>

@@ -1,0 +1,14 @@
+@page "/Error"
+
+<PageTitle>Error</PageTitle>
+
+<h1 class="text-danger">Error.</h1>
+<p>An error occurred while processing your request.</p>
+@if (HttpContext?.TraceIdentifier is { } id)
+{
+    <p><strong>Request ID:</strong> <code>@id</code></p>
+}
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+}
