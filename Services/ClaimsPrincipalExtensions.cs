@@ -1,11 +1,15 @@
 using System.Security.Claims;
+using Pisco.Domain;
 
 namespace Pisco.Services;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static long UserId(this ClaimsPrincipal user) =>
-        long.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+    public static bool IsSignedIn(this ClaimsPrincipal user) => user.Identity?.IsAuthenticated == true;
 
-    public static bool IsAdmin(this ClaimsPrincipal user) => user.IsInRole("Admin");
+    public static void EnsureSignedIn(this ClaimsPrincipal user)
+    {
+        if (!user.IsSignedIn())
+            throw new DomainException("Domain_SignInRequired");
+    }
 }

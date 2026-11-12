@@ -1,0 +1,40 @@
+@implements IDisposable
+
+@if (Parent!.IsActive(this))
+{
+    @ChildContent
+}
+
+@code {
+    [CascadingParameter] public TabView? Parent { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+
+    [Parameter] public string? Badge { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    [Parameter] public string? Name { get; set; }
+
+    public string Key => Name ?? Title;
+
+    private (string, string?, string?, bool)? shown;
+
+    protected override void OnParametersSet()
+    {
+        if (Parent is null)
+            throw new InvalidOperationException($"{nameof(TabItem)} must be placed inside a {nameof(TabView)}.");
+
+        var now = (Title, Icon, Badge, Disabled);
+        if (shown is null)
+            Parent.Add(this);
+        else if (shown != now)
+            Parent.Refresh();
+        shown = now;
+    }
+
+    public void Dispose() => Parent?.Remove(this);
+}

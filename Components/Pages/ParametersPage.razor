@@ -1,0 +1,43 @@
+@page "/parameters"
+@attribute [Authorize]
+@inject IStringLocalizer<Resources> L
+@inject WorkspaceService Workspaces
+@inject ConfigService Config
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<PageTitle>@L["Params_Title"] · Pisco</PageTitle>
+
+<div class="page-head">
+    <h1>@L["Params_Title"]</h1>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-7">
+        <WorkspacesSettings Workspaces="workspaces" LandingId="config?.LandingWorkspaceId" OnChanged="loadAsync" />
+    </div>
+    <div class="col-lg-5">
+        <ConfigSettings Config="config" Workspaces="workspaces" OnChanged="loadAsync" />
+    </div>
+</div>
+
+@code {
+    private List<Workspace>? workspaces;
+    private Domain.Config? config;
+
+    protected override Task OnInitializedAsync() => loadAsync();
+
+    private async Task loadAsync()
+    {
+        try
+        {
+            workspaces = await Workspaces.ListAllAsync((await AuthProvider.GetAuthenticationStateAsync()).User);
+            config = await Config.GetAsync();
+        }
+        catch (DomainException ex)
+        {
+            workspaces = [];
+            Toasts.Error(L[ex.Message, ex.Args]);
+        }
+    }
+}

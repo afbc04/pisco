@@ -1,0 +1,71 @@
+@inject IStringLocalizer<Resources> L
+@inject WorkspaceState WsState
+@inject ToastService Toasts
+
+<section class="panel-card">
+    <header class="panel-card-head">
+        <div>
+            <h2 class="panel-card-title"><i class="bi bi-collection"></i> @L["Params_Workspaces"]</h2>
+            <p class="panel-card-hint">@L["Params_Workspaces_Hint"]</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" @onclick="() => openEditor(null)">
+            <i class="bi bi-plus-lg"></i> @L["Ws_New"]
+        </button>
+    </header>
+
+    @if (Workspaces is null)
+    {
+        <p class="panel-card-body text-muted">@L["Common_Loading"]</p>
+    }
+    else
+    {
+        <ul class="row-list is-flush">
+            @foreach (var ws in Workspaces)
+            {
+                <li>
+                    <button type="button" class="row-list-item" title="@L["Ws_Edit"]" @onclick="() => openEditor(ws)">
+                        <span class="ws-avatar">@ws.Name[..1].ToUpperInvariant()</span>
+                        <span class="row-list-main">@ws.Name</span>
+                        @if (ws.Id == LandingId)
+                        {
+                            <span class="ws-tag" title="@L["Ws_Landing_Hint"]"><i class="bi bi-house"></i> @L["Ws_Landing"]</span>
+                        }
+                        @if (ws.IsPublic)
+                        {
+                            <span class="ws-public" title="@L["Ws_Public_Hint"]"><i class="bi bi-globe2"></i> @L["Ws_Public"]</span>
+                        }
+                        <i class="bi bi-chevron-right row-list-chev"></i>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@if (editorOpen)
+{
+    <WorkspaceEditor Workspace="editing" IsLanding="@(editing is not null && editing.Id == LandingId)" OnClose="() => editorOpen = false" OnSaved="savedAsync" />
+}
+
+@code {
+    [Parameter] public List<Workspace>? Workspaces { get; set; }
+    [Parameter] public long? LandingId { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private bool editorOpen;
+    private Workspace? editing;
+
+    private void openEditor(Workspace? ws)
+    {
+        editing = ws;
+        editorOpen = true;
+    }
+
+    private async Task savedAsync(string message)
+    {
+        editorOpen = false;
+        await OnChanged.InvokeAsync();
+        await WsState.ReloadAsync();
+        Toasts.Success(message);
+    }
+}

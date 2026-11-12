@@ -1,0 +1,220 @@
+.page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.page-head h1 {
+    margin: 0;
+}
+
+.page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.page-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.page-collapse {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.2rem 0.4rem;
+    margin-left: -0.4rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: none;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+.page-collapse:hover {
+    background: var(--primary-soft);
+}
+
+.page-collapse .bi {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.page-collapse-summary {
+    margin-left: 0.35rem;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.filter {
+    flex: 0 1 auto;
+}
+
+.filter .form-control,
+.filter .form-select {
+    font-size: 0.85rem;
+}
+
+.filter-search {
+    position: relative;
+    flex: 1 1 220px;
+}
+
+.filter-search .bi {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+}
+
+.filter-search .form-control {
+    padding-left: 2rem;
+}
+
+.row-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--divider);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    box-shadow: var(--panel-shadow);
+    overflow: hidden;
+}
+
+.row-list.is-flush {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+}
+
+.row-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.4rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--divider);
+}
+
+.row-list li:last-child {
+    border-bottom: none;
+}
+
+.row-list li:has(> .row-list-item) {
+    padding: 0;
+}
+
+.row-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 3.4rem;
+    padding: 0.6rem 1rem;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.row-list-item:hover {
+    background: var(--primary-soft);
+}
+
+.row-list-item:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+.row-list-chev {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.row-list-item:hover .row-list-chev {
+    color: var(--heading);
+    transform: translateX(2px);
+}
+
+.row-list-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--heading);
+    font-weight: 600;
+}
+
+.panel-card {
+    border: 1px solid var(--divider);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    box-shadow: var(--panel-shadow);
+    overflow: hidden;
+}
+
+.panel-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--divider);
+}
+
+.panel-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+.panel-card-title .bi {
+    color: var(--primary);
+}
+
+.panel-card-hint {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.panel-card-head .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.panel-card-body {
+    margin: 0;
+    padding: 1rem;
+}
+
+.panel-field + .panel-field {
+    margin-top: 1rem;
+}
+
+.panel-field .form-label .bi {
+    margin-right: 0.25rem;
+    color: var(--muted);
+}

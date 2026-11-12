@@ -1,13 +1,15 @@
+name: pisco
+
 services:
   db:
     image: postgres:16-alpine
     container_name: pisco-db
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-pisco}
+      POSTGRES_USER: ${POSTGRES_USER:-pisco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pisco}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pisco-pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -18,16 +20,21 @@ services:
     restart: unless-stopped
 
   pisco:
+    build:
+      context: .
+      target: final
+    image: pisco:latest
     container_name: pisco
-    build: .
     ports:
-      - "5080:8080"
+      - "${PISCO_PORT:-5080}:8080"
     environment:
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-pisco}
+      POSTGRES_USER: ${POSTGRES_USER:-pisco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pisco}
+    volumes:
+      - pisco-keys:/home/app/.aspnet/DataProtection-Keys
     depends_on:
       db:
         condition: service_healthy
@@ -35,3 +42,4 @@ services:
 
 volumes:
   pisco-pgdata:
+  pisco-keys:

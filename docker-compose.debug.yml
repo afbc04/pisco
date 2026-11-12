@@ -1,0 +1,12 @@
+# Acrescenta-se ao docker-compose.yml para correr a app em Debug, pronta para o VS Code se ligar:
+#   docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d --build
+services:
+  pisco:
+    build:
+      target: debug
+      args:
+        CONFIGURATION: Debug
+    image: pisco:debug
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    restart: "no"

@@ -1,0 +1,90 @@
+<div class="tab-view @(collapsed ? "is-collapsed" : null)">
+    <nav class="tab-rail" role="tablist" aria-orientation="vertical">
+        @foreach (var tab in tabs)
+        {
+            var active = tab == current;
+            <button type="button" role="tab" class="tab-btn @(active ? "is-active" : null)" title="@tab.Title"
+                    aria-selected="@active" disabled="@tab.Disabled" @onclick="() => selectAsync(tab)">
+                @if (tab.Icon is not null)
+                {
+                    <i class="bi bi-@tab.Icon"></i>
+                }
+                <span class="tab-btn-title">@tab.Title</span>
+                @if (tab.Badge is not null)
+                {
+                    <span class="tab-btn-badge">@tab.Badge</span>
+                }
+            </button>
+        }
+        <button type="button" class="tab-rail-toggle" title="@(collapsed ? ExpandLabel : CollapseLabel)" aria-label="@(collapsed ? ExpandLabel : CollapseLabel)"
+                aria-expanded="@(!collapsed)" @onclick="() => collapsed = !collapsed">
+            <i class="bi bi-chevron-double-@(collapsed ? "right" : "left")"></i>
+        </button>
+    </nav>
+
+    <div class="tab-panel">
+        <div class="tab-panel-content" role="tabpanel">
+            <CascadingValue Value="this" IsFixed="true">
+                @ChildContent
+            </CascadingValue>
+        </div>
+
+        @if ((current?.Footer ?? Footer) is { } footer)
+        {
+            <div class="tab-panel-foot">
+                @footer
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    [Parameter] public string? ActiveTab { get; set; }
+    [Parameter] public EventCallback<string> ActiveTabChanged { get; set; }
+
+    [Parameter] public string CollapseLabel { get; set; } = "Collapse";
+    [Parameter] public string ExpandLabel { get; set; } = "Expand";
+
+    private bool collapsed;
+
+    private readonly List<TabItem> tabs = [];
+    private TabItem? selected;
+
+    internal bool IsActive(TabItem tab) => tab == current;
+
+    private TabItem? current =>
+        tabs.FirstOrDefault(t => t == selected && !t.Disabled)
+        ?? tabs.FirstOrDefault(t => t.Key == ActiveTab && !t.Disabled)
+        ?? tabs.FirstOrDefault(t => !t.Disabled);
+
+    protected override void OnParametersSet()
+    {
+        if (ActiveTab is not null && selected?.Key != ActiveTab)
+            selected = null;
+    }
+
+    internal void Add(TabItem tab)
+    {
+        tabs.Add(tab);
+        StateHasChanged();
+    }
+
+    internal void Remove(TabItem tab)
+    {
+        if (tabs.Remove(tab))
+            StateHasChanged();
+    }
+
+    internal void Refresh() => StateHasChanged();
+
+    private async Task selectAsync(TabItem tab)
+    {
+        if (tab.Disabled || tab == current)
+            return;
+        selected = tab;
+        await ActiveTabChanged.InvokeAsync(tab.Key);
+    }
+}

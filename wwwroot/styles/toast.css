@@ -1,0 +1,112 @@
+.toaster {
+    position: fixed;
+    bottom: 4.75rem;
+    right: 1.5rem;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: min(380px, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+.toast-item {
+    --toast: var(--primary);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.85rem 0.85rem 0.75rem 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    background: var(--surface);
+    box-shadow: var(--overlay-shadow);
+    color: var(--heading);
+    overflow: hidden;
+    pointer-events: auto;
+    animation: toast-in 0.18s ease;
+}
+
+.toast-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--toast);
+}
+
+.toast-success { --toast: var(--success); }
+.toast-error { --toast: var(--danger); }
+.toast-warning { --toast: var(--warning); }
+.toast-info { --toast: var(--info); }
+
+.toast-item > .bi {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--toast);
+}
+
+.toast-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.toast-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    line-height: 1.3;
+}
+
+.toast-text {
+    color: var(--muted);
+    font-size: 0.86rem;
+    overflow-wrap: anywhere;
+}
+
+.toast-close {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 0.8rem;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.toast-close:hover {
+    color: var(--heading);
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 991.98px) {
+    .toaster {
+        top: 0.4rem;
+        bottom: auto;
+        left: 0.5rem;
+        right: 0.5rem;
+        width: auto;
+        gap: 0.3rem;
+    }
+
+    .toast-item {
+        gap: 0.55rem;
+        padding: 0.55rem 0.6rem 0.45rem 0.7rem;
+    }
+
+    .toast-item > .bi {
+        font-size: 1.05rem;
+    }
+
+    .toast-title {
+        font-size: 0.82rem;
+    }
+
+    .toast-text {
+        font-size: 0.78rem;
+    }
+}

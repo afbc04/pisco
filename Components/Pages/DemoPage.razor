@@ -1,0 +1,292 @@
+@page "/demo"
+@inject IStringLocalizer<Resources> L
+@inject ToastService Toasts
+
+<PageTitle>@L["Demo_Title"] · Pisco</PageTitle>
+
+<div class="page-head">
+    <h1>@L["Demo_Title"]</h1>
+    <div class="page-actions">
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info(L["Demo_Toast_InfoMessage"])'>
+            <i class="bi bi-info-circle"></i> @L["Demo_Toast_Info"]
+        </button>
+        <button type="button" class="btn btn-primary" @onclick="openForm">
+            <i class="bi bi-plus-lg"></i> @L["Demo_Modal_Form"]
+        </button>
+    </div>
+</div>
+<p class="text-muted">@L["Demo_Intro"]</p>
+
+<section class="card card-body mb-3">
+    <h5>@L["Demo_Header_Title"]</h5>
+    <p class="text-muted mb-0">@L["Demo_Header_Text"]</p>
+</section>
+
+<section class="card card-body mb-3">
+    <h5>@L["Demo_Toasts_Title"]</h5>
+    <p class="text-muted">@L["Demo_Toasts_Text"]</p>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success(L["Demo_Toast_SuccessMessage"])'>
+            <i class="bi bi-check-circle"></i> @L["Demo_Toast_Success"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Error(L["Demo_Toast_ErrorMessage"])'>
+            <i class="bi bi-exclamation-circle"></i> @L["Demo_Toast_Error"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Warning(L["Demo_Toast_WarningMessage"])'>
+            <i class="bi bi-exclamation-triangle"></i> @L["Demo_Toast_Warning"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info(L["Demo_Toast_InfoMessage"])'>
+            <i class="bi bi-info-circle"></i> @L["Demo_Toast_Info"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success(L["Demo_Toast_CustomMessage"], L["Demo_Toast_CustomTitle"])'>
+            <i class="bi bi-type"></i> @L["Demo_Toast_Custom"]
+        </button>
+    </div>
+</section>
+
+<section class="card card-body mb-3">
+    <h5>@L["Demo_Modal_Title"]</h5>
+    <p class="text-muted">@L["Demo_Modal_Text"]</p>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-secondary" @onclick="() => largeOpen = true">
+            <i class="bi bi-window"></i> @L["Demo_Modal_Large"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="() => smallOpen = true">
+            <i class="bi bi-window-stack"></i> @L["Demo_Modal_Small"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="openForm">
+            <i class="bi bi-ui-checks"></i> @L["Demo_Modal_Form"]
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="() => tabsOpen = true">
+            <i class="bi bi-layout-sidebar"></i> @L["Demo_Modal_Tabs"]
+        </button>
+    </div>
+</section>
+
+<section class="card card-body mb-3">
+    <div class="page-section-head">
+        <button type="button" class="page-collapse" aria-expanded="@sectionOpen" @onclick="() => sectionOpen = !sectionOpen">
+            <i class="bi bi-chevron-@(sectionOpen ? "down" : "right")"></i>
+            <i class="bi bi-folder2"></i>
+            @L["Demo_Collapse_Title"]
+            <span class="page-collapse-summary">@sectionItems</span>
+        </button>
+    </div>
+    @if (sectionOpen)
+    {
+        <ul class="mb-0">
+            @for (var i = 1; i <= sectionItems; i++)
+            {
+                <li>@L["Demo_Collapse_Item", i]</li>
+            }
+        </ul>
+    }
+</section>
+
+<section class="card card-body mb-3">
+    <h5>@L["Demo_Search_Title"]</h5>
+    <div class="filter filter-search mb-2">
+        <i class="bi bi-search"></i>
+        <input class="form-control" placeholder="@L["Demo_Search_Placeholder"]" @bind="search" @bind:event="oninput" />
+    </div>
+    @if (filteredCities.Any())
+    {
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var city in filteredCities)
+            {
+                <span class="badge text-bg-secondary">@city</span>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-0">@L["Demo_Search_Empty"]</p>
+    }
+</section>
+
+<section class="card card-body mb-3">
+    <h5>@L["Demo_Base_Title"]</h5>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-primary">@L["Common_Save"]</button>
+        <button type="button" class="btn btn-outline-secondary">@L["Common_Cancel"]</button>
+        <button type="button" class="btn btn-outline-danger">@L["Common_Delete"]</button>
+        <button type="button" class="btn btn-primary" disabled>@L["Demo_Disabled"]</button>
+        <button type="button" class="btn btn-link px-0"><i class="bi bi-plus-lg"></i> @L["Demo_Link"]</button>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">@L["Common_Name"] <span class="required-mark">*</span></label>
+            <input class="form-control" placeholder="@L["Common_Name"]" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">@L["Common_Name"] <span class="required-mark">*</span></label>
+            <input class="form-control is-invalid" />
+            <div class="invalid-feedback d-block">@L["Demo_Form_Required"]</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">@L["Demo_Select"]</label>
+            <select class="form-select">
+                <option>Lisboa</option>
+                <option>Porto</option>
+                <option>Braga</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">@L["Demo_Range", range]</label>
+            <input type="range" class="form-range" min="0" max="100" @bind="range" @bind:event="oninput" />
+        </div>
+        <div class="col-12">
+            <label class="form-check">
+                <input type="checkbox" class="form-check-input" @bind="check" />
+                <span class="form-check-label">@L["Demo_Check"]</span>
+            </label>
+            <p class="form-text mb-0">@L["Demo_Hint"]</p>
+        </div>
+        <div class="col-12">
+            <label class="form-label">@L["Common_Notes"]</label>
+            <textarea class="form-control" rows="2"></textarea>
+        </div>
+    </div>
+
+    <div class="alert alert-danger py-2 small">@L["Demo_Alert_Danger"]</div>
+    <div class="alert alert-warning py-2 small">@L["Demo_Alert_Warning"]</div>
+    <div class="d-flex flex-wrap gap-2">
+        <span class="badge text-bg-warning">@L["Ws_Public"]</span>
+        <span class="badge text-bg-secondary">@L["Demo_Badge"]</span>
+    </div>
+</section>
+
+@if (largeOpen)
+{
+    <EntryModal Title="@L["Demo_Modal_Large"]" OnClose="() => largeOpen = false">
+        <ChildContent>
+            <p>@L["Demo_Modal_Body"]</p>
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => largeOpen = false">@L["Common_Close"]</button>
+        </Footer>
+    </EntryModal>
+}
+
+@if (smallOpen)
+{
+    <EntryModal Title="@L["Demo_Modal_Small"]" Small="true" OnClose="() => smallOpen = false">
+        <ChildContent>
+            <p class="mb-0">@L["Demo_Modal_Body"]</p>
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-primary" @onclick="confirmSmall">@L["Common_Save"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => smallOpen = false">@L["Common_Cancel"]</button>
+        </Footer>
+    </EntryModal>
+}
+
+@if (formOpen)
+{
+    <EntryModal Title="@L["Demo_Modal_Form"]" Small="true" OnClose="() => formOpen = false">
+        <ChildContent>
+            <label class="form-label">@L["Common_Name"] <span class="required-mark">*</span></label>
+            <input class="form-control @(nameInvalid ? "is-invalid" : null)" @bind="name" @bind:after="() => nameInvalid = false" />
+            @if (nameInvalid)
+            {
+                <div class="invalid-feedback d-block">@L["Demo_Form_Required"]</div>
+            }
+        </ChildContent>
+        <Footer>
+            <button type="button" class="btn btn-primary" @onclick="saveForm">@L["Common_Save"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => formOpen = false">@L["Common_Cancel"]</button>
+        </Footer>
+    </EntryModal>
+}
+
+@if (tabsOpen)
+{
+    <TabbedModal Title="@L["Demo_Modal_Tabs"]" CollapseLabel="@L["Modal_CollapseTabs"]" ExpandLabel="@L["Modal_ExpandTabs"]" @bind-ActiveTab="activeTab" OnClose="() => tabsOpen = false">
+        <ChildContent>
+            <TabItem Name="general" Title="@L["Demo_Tabs_General"]" Icon="sliders">
+                <h6>@L["Demo_Tabs_General"]</h6>
+                <label class="form-label">@L["Common_Name"]</label>
+                <input class="form-control mb-3" @bind="name" />
+                <label class="form-check">
+                    <input type="checkbox" class="form-check-input" @bind="check" />
+                    <span class="form-check-label">@L["Demo_Check"]</span>
+                </label>
+            </TabItem>
+            <TabItem Name="notes" Title="@L["Common_Notes"]" Icon="journal-text" Badge="@notes.Count.ToString()">
+                <h6>@L["Common_Notes"]</h6>
+                <ul>
+                    @foreach (var note in notes)
+                    {
+                        <li>@note</li>
+                    }
+                </ul>
+                <button type="button" class="btn btn-link px-0" @onclick='() => notes.Add(L["Demo_Collapse_Item", notes.Count + 1])'>
+                    <i class="bi bi-plus-lg"></i> @L["Demo_Link"]
+                </button>
+            </TabItem>
+            <TabItem Name="advanced" Title="@L["Demo_Tabs_Advanced"]" Icon="gear">
+                <h6>@L["Demo_Tabs_Advanced"]</h6>
+                <p class="text-muted">@L["Demo_Modal_Body"]</p>
+                <label class="form-label">@L["Demo_Range", range]</label>
+                <input type="range" class="form-range" min="0" max="100" @bind="range" @bind:event="oninput" />
+            </TabItem>
+            <TabItem Name="locked" Title="@L["Demo_Disabled"]" Icon="lock" Disabled="true" />
+        </ChildContent>
+        <Footer>
+            <span class="text-muted small me-auto">@L["Demo_Tabs_Active", activeTab ?? "general"]</span>
+            <button type="button" class="btn btn-primary" @onclick="() => tabsOpen = false">@L["Common_Save"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="() => tabsOpen = false">@L["Common_Cancel"]</button>
+        </Footer>
+    </TabbedModal>
+}
+
+@code {
+    private static readonly string[] cities = ["Lisboa", "Porto", "Braga", "Coimbra", "Faro", "Évora", "Aveiro", "Viseu", "Setúbal", "Leiria"];
+
+    private const int sectionItems = 3;
+
+    private bool largeOpen;
+    private bool smallOpen;
+    private bool formOpen;
+    private bool tabsOpen;
+    private string? activeTab;
+    private List<string> notes = ["Lisboa", "Porto"];
+    private bool sectionOpen = true;
+
+    private string search = "";
+    private int range = 40;
+    private bool check = true;
+
+    private string name = "";
+    private bool nameInvalid;
+
+    private IEnumerable<string> filteredCities =>
+        cities.Where(c => c.Contains(search.Trim(), StringComparison.CurrentCultureIgnoreCase));
+
+    private void openForm()
+    {
+        name = "";
+        nameInvalid = false;
+        formOpen = true;
+    }
+
+    private void saveForm()
+    {
+        nameInvalid = string.IsNullOrWhiteSpace(name);
+        if (nameInvalid)
+        {
+            Toasts.Error(L["Demo_Form_Fix"]);
+            return;
+        }
+        formOpen = false;
+        Toasts.Success(L["Demo_Form_Saved", name.Trim()]);
+    }
+
+    private void confirmSmall()
+    {
+        smallOpen = false;
+        Toasts.Success(L["Demo_Toast_SuccessMessage"]);
+    }
+}

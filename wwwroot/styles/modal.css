@@ -50,11 +50,11 @@
 .editor-close {
     border: none;
     background: none;
-    font-size: 1.5rem;
+    font-size: 1rem;
     line-height: 1;
     color: var(--muted);
     cursor: pointer;
-    padding: 0.05rem 0.5rem;
+    padding: 0.4rem 0.5rem;
     border-radius: 0.375rem;
 }
 
@@ -75,6 +75,28 @@
     overflow-y: auto;
 }
 
+.editor-modal ~ .editor-backdrop {
+    z-index: 1057;
+}
+
+.editor-modal ~ .editor-modal {
+    z-index: 1058;
+}
+
+.editor-modal.is-small {
+    width: min(560px, calc(100vw - 3rem));
+    height: auto;
+    max-height: calc(100vh - 3rem);
+}
+
+.editor-modal-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    border-top: 1px solid var(--divider);
+}
+
 @media (max-width: 767.98px) {
     .editor-modal {
         top: 0;
@@ -84,5 +106,153 @@
         height: 100dvh;
         border-radius: 0;
         animation: fade-in 0.15s ease;
+    }
+
+    .editor-modal.is-small {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: auto;
+        max-height: 90dvh;
+        border-radius: 1rem 1rem 0 0;
+        padding-bottom: env(safe-area-inset-bottom);
+        animation: sheet-up 0.2s ease;
+    }
+}
+
+@keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.tabbed-modal .editor-modal-body > .tab-view {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.login-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1055;
+    background:
+        radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--primary) 45%, transparent), transparent 40%),
+        radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--success) 30%, transparent), transparent 40%),
+        color-mix(in srgb, var(--bg) 60%, transparent);
+    background-size: 140% 140%;
+    animation: fade-in 0.2s ease, login-drift 10s ease-in-out infinite alternate;
+}
+
+.login-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1056;
+    width: min(360px, calc(100vw - 2rem));
+    padding: 1.5rem;
+    transform: translate(-50%, -50%);
+    border: 1px solid color-mix(in srgb, var(--heading) 18%, transparent);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+    backdrop-filter: blur(18px);
+    box-shadow: var(--overlay-shadow);
+    animation: editor-pop 0.18s ease;
+}
+
+.login-card.is-failed {
+    animation: login-shake 0.35s ease;
+}
+
+.login-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: none;
+    border-radius: 0.4rem;
+    background: none;
+    color: var(--muted);
+}
+
+.login-close:hover {
+    background: var(--primary-soft);
+    color: var(--heading);
+}
+
+.login-title {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+.login-admin {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+    padding: 0.55rem;
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--bg) 45%, transparent);
+    line-height: 1.25;
+}
+
+.login-admin img {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 0.45rem;
+    object-fit: cover;
+}
+
+.login-admin-name {
+    display: block;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+.login-admin-status {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.login-admin.is-online .login-admin-status {
+    color: var(--success);
+}
+
+.login-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.login-row .form-control {
+    background: color-mix(in srgb, var(--bg) 45%, transparent);
+}
+
+.login-error {
+    margin: 0.5rem 0 0;
+    font-size: 0.82rem;
+    color: var(--danger);
+}
+
+@keyframes login-drift {
+    from { background-position: 0% 0%; }
+    to { background-position: 100% 100%; }
+}
+
+@keyframes login-shake {
+    0%, 100% { transform: translate(-50%, -50%); }
+    20%, 60% { transform: translate(calc(-50% - 6px), -50%); }
+    40%, 80% { transform: translate(calc(-50% + 6px), -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-scrim,
+    .login-card,
+    .login-card.is-failed {
+        animation: none;
     }
 }

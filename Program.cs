@@ -1,8 +1,9 @@
-using Dapper;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pisco.Components;
 using Pisco.Data;
@@ -19,7 +20,6 @@ builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
 var cultures = new[] { "pt", "en" };
 
-DefaultTypeMap.MatchNamesWithUnderscores = true;
 builder.Services.AddNpgsqlDataSource(new NpgsqlConnectionStringBuilder
 {
     Host = builder.Configuration["POSTGRES_HOST"],
@@ -28,20 +28,21 @@ builder.Services.AddNpgsqlDataSource(new NpgsqlConnectionStringBuilder
     Username = builder.Configuration["POSTGRES_USER"],
     Password = builder.Configuration["POSTGRES_PASSWORD"],
 }.ConnectionString);
+builder.Services.AddDbContextFactory<PiscoDbContext>((sp, o) => o.UseNpgsql(sp.GetRequiredService<NpgsqlDataSource>()));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(o =>
     {
-        o.LoginPath = "/login";
-        o.AccessDeniedPath = "/login";
-        o.ExpireTimeSpan = TimeSpan.FromDays(7);
-        o.SlidingExpiration = true;
-        o.Cookie.Name = "Pisco.Auth";
+        o.Events.OnRedirectToLogin = ctx =>
+        {
+            ctx.Response.Redirect(AppRoutes.Login(ctx.Request.Path + ctx.Request.QueryString));
+            return Task.CompletedTask;
+        };
+        o.Events.OnRedirectToAccessDenied = o.Events.OnRedirectToLogin;
         o.Events.OnValidatePrincipal = async ctx =>
         {
-            var user = await ctx.HttpContext.RequestServices.GetRequiredService<AuthService>()
-                .GetUserAsync(ctx.Principal!.UserId());
-            if (user is null || user.Username != ctx.Principal!.Identity?.Name || user.IsAdmin != ctx.Principal!.IsAdmin())
+            var config = await ctx.HttpContext.RequestServices.GetRequiredService<ConfigService>().GetAsync();
+            if (config is null || config.Username != ctx.Principal!.Identity?.Name)
             {
                 ctx.RejectPrincipal();
                 await ctx.HttpContext.SignOutAsync();
@@ -51,24 +52,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
+builder.Services.AddScoped<ConfigService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<WorkspaceState>();
+builder.Services.AddScoped<ToastService>();
+builder.Services.AddSingleton<AdminPresence>();
+builder.Services.AddScoped<PresenceCircuit>();
+builder.Services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PresenceCircuit>());
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
-    var db = sp.GetRequiredService<NpgsqlDataSource>();
-    await CoreDatabase.EnsureCoreIsInitializatedAsync(db);
-
-    var workspaces = sp.GetRequiredService<WorkspaceService>();
-    await SeedData.SeedAsync(db, workspaces, sp.GetRequiredService<AuthService>());
-
-    await using var conn = await db.OpenConnectionAsync();
-    foreach (var ws in await workspaces.ListAllAsync())
-        await WorkspaceSchema.CreateAsync(conn, ws.SchemaName);
+    await ConfigSchema.EnsureCreatedAsync(sp.GetRequiredService<NpgsqlDataSource>());
+    await SeedData.SeedAsync(sp.GetRequiredService<WorkspaceService>(), sp.GetRequiredService<ConfigService>());
 }
 
 if (!app.Environment.IsDevelopment())
@@ -78,12 +77,17 @@ app.UseRequestLocalization(o => o
     .SetDefaultCulture("pt")
     .AddSupportedCultures(cultures)
     .AddSupportedUICultures(cultures));
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache",
+});
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+app.MapFallback(() => Results.Redirect("/"));
 
 app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext http) =>
 {
@@ -92,28 +96,18 @@ app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext htt
             CookieRequestCultureProvider.DefaultCookieName,
             CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
             new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true });
-    return Results.LocalRedirect(string.IsNullOrWhiteSpace(redirectUri) ? "/" : redirectUri);
+    return Results.LocalRedirect(AppRoutes.LocalOrHome(redirectUri));
 });
 
 var auth = app.MapGroup("/auth");
 
 auth.MapPost("/login", async (HttpContext http, AuthService authSvc, IAntiforgery antiforgery) =>
 {
-    if (!await antiforgery.IsRequestValidAsync(http))
-        return Results.Redirect("/login?error=1");
-
     var form = await http.Request.ReadFormAsync();
-    var returnUrl = form["returnUrl"].ToString();
-
-    var user = await authSvc.ValidateCredentialsAsync(form["username"].ToString(), form["password"].ToString());
-    if (user is null)
-    {
-        var back = string.IsNullOrEmpty(returnUrl) ? "" : $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
-        return Results.Redirect($"/login?error=1{back}");
-    }
-
-    await authSvc.SignInAsync(http, user);
-    return Results.LocalRedirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
+    var returnUrl = AppRoutes.LocalOrHome(form[AppRoutes.ReturnUrlParam]);
+    var ok = await antiforgery.IsRequestValidAsync(http)
+             && await authSvc.SignInAsync(http, form["username"].ToString(), form["password"].ToString());
+    return Results.LocalRedirect(ok ? returnUrl : AppRoutes.Login(returnUrl, failed: true));
 });
 
 auth.MapPost("/logout", async (HttpContext http) =>

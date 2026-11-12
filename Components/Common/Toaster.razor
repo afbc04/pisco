@@ -1,0 +1,61 @@
+@implements IDisposable
+@inject ToastService ToastService
+@inject IStringLocalizer<Resources> R
+
+<div class="toaster" role="status" aria-live="polite">
+    @if (current is { } entry)
+    {
+        <div class="toast-item @style(entry.Toast.Kind)" @key="entry">
+            <i class="bi @icon(entry.Toast.Kind)"></i>
+            <div class="toast-body">
+                <div class="toast-title">@(entry.Toast.Title ?? R[$"Toast_{entry.Toast.Kind}"])</div>
+                <div class="toast-text">@entry.Toast.Message</div>
+            </div>
+            <button type="button" class="toast-close" title="@R["Common_Close"]" @onclick="() => current = null"><i class="bi bi-x-lg"></i></button>
+        </div>
+    }
+</div>
+
+@code {
+    private const int lifetime = 4000;
+
+    private sealed class Entry(Toast toast)
+    {
+        public Toast Toast { get; } = toast;
+    }
+
+    private Entry? current;
+
+    protected override void OnInitialized() => ToastService.Shown += show;
+
+    private void show(Toast toast) => InvokeAsync(async () =>
+    {
+        var entry = new Entry(toast);
+        current = entry;
+        StateHasChanged();
+        await Task.Delay(lifetime);
+        if (current == entry)
+        {
+            current = null;
+            StateHasChanged();
+        }
+    });
+
+    private static string icon(ToastKind kind) => kind switch
+    {
+        ToastKind.Success => "bi-check-circle-fill",
+        ToastKind.Error => "bi-exclamation-circle-fill",
+        ToastKind.Warning => "bi-exclamation-triangle-fill",
+        _ => "bi-info-circle-fill",
+    };
+
+    public static string style(ToastKind kind) => kind switch
+    {
+        ToastKind.Success => "toast-success",
+        ToastKind.Error => "toast-error",
+        ToastKind.Warning => "toast-warning",
+        _ => "toast-info"
+    };
+
+    public void Dispose() => ToastService.Shown -= show;
+}

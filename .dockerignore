@@ -2,6 +2,10 @@
 **/obj/
 .git/
 .vscode/
+docs/
+*.md
 Dockerfile
-docker-compose.yml
+docker-compose*.yml
+.dockerignore
 .env
+.env.*

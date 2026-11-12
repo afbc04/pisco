@@ -1,0 +1,124 @@
+@using System.Security.Claims
+@inject IStringLocalizer<Resources> L
+@inject WorkspaceService Workspaces
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="@L[isNew ? "Ws_New" : "Ws_Edit"]" Small="true" OnClose="OnClose">
+    <ChildContent>
+        <section class="ws-section">
+            <label class="ws-section-title" for="ws-name">@L["Common_Name"] <span class="required-mark">*</span></label>
+            <input id="ws-name" class="form-control @(nameError is null ? null : "is-invalid")" maxlength="@Workspace.NameLengthMax"
+                   @bind="name" @bind:event="oninput" @bind:after="() => nameError = null" autofocus />
+            @if (nameError is not null)
+            {
+                <div class="invalid-feedback d-block">@nameError</div>
+            }
+        </section>
+
+        <section class="ws-section">
+            <label class="form-check form-switch mb-0">
+                <input type="checkbox" class="form-check-input" role="switch" @bind="isPublic" disabled="@IsLanding" />
+                <span class="form-check-label">@L["Ws_Public"]</span>
+            </label>
+            <p class="ws-hint mb-0 mt-1">@L[IsLanding ? "Domain_Config_LandingMustBePublic" : "Ws_Public_Hint"]</p>
+        </section>
+
+        @if (!isNew)
+        {
+            <section class="ws-section ws-danger">
+                <div class="ws-section-title">@L["Ws_Delete"]</div>
+                @if (IsLanding)
+                {
+                    <p class="ws-hint mb-0">@L["Domain_Workspace_LandingDelete"]</p>
+                }
+                else if (!confirmDelete)
+                {
+                    <p class="ws-hint">@L["Ws_Delete_Hint"]</p>
+                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick='() => { confirmDelete = true; confirmName = ""; }'>
+                        <i class="bi bi-trash3"></i> @L["Ws_Delete"]
+                    </button>
+                }
+                else
+                {
+                    <p class="ws-hint">@((MarkupString)L["Ws_Delete_Confirm", System.Net.WebUtility.HtmlEncode(Workspace!.Name)].Value)</p>
+                    <div class="ws-inline">
+                        <input class="form-control" aria-label="@L["Ws_Delete"]" @bind="confirmName" @bind:event="oninput" autofocus />
+                        <button type="button" class="btn btn-danger" disabled="@(busy || confirmName.Trim() != Workspace.Name)" @onclick="deleteAsync">@L["Common_Delete"]</button>
+                        <button type="button" class="btn btn-outline-secondary" title="@L["Common_Cancel"]" @onclick="() => confirmDelete = false"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                }
+            </section>
+        }
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="saveAsync">@L[isNew ? "Ws_Create" : "Common_Save"]</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnClose">@L["Common_Cancel"]</button>
+    </Footer>
+</EntryModal>
+
+@code {
+    [Parameter] public Workspace? Workspace { get; set; }
+    [Parameter] public bool IsLanding { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public EventCallback<string> OnSaved { get; set; }
+
+    private bool isNew => Workspace is null;
+
+    private ClaimsPrincipal actor = new();
+    private string name = "";
+    private bool isPublic;
+    private string? nameError;
+    private bool confirmDelete;
+    private string confirmName = "";
+    private bool busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        name = Workspace?.Name ?? "";
+        isPublic = Workspace?.IsPublic ?? false;
+    }
+
+    private Task saveAsync() => runAsync(async () =>
+    {
+        if (isNew)
+        {
+            var ws = await Workspaces.CreateAsync(name, isPublic, actor);
+            await OnSaved.InvokeAsync(L["Ws_Created", ws.Name]);
+        }
+        else
+        {
+            await Workspaces.UpdateAsync(Workspace!.Id, name, isPublic, actor);
+            await OnSaved.InvokeAsync(L["Ws_Saved"]);
+        }
+    });
+
+    private Task deleteAsync() => runAsync(async () =>
+    {
+        await Workspaces.DeleteAsync(Workspace!.Id, actor);
+        await OnSaved.InvokeAsync(L["Ws_Deleted", Workspace.Name]);
+    });
+
+    private async Task runAsync(Func<Task> action)
+    {
+        busy = true;
+        try
+        {
+            await action();
+        }
+        catch (DomainException ex) when (ex.Message.StartsWith("Domain_Name_"))
+        {
+            nameError = L[ex.Message, ex.Args];
+        }
+        catch (DomainException ex)
+        {
+            Toasts.Error(L[ex.Message, ex.Args]);
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

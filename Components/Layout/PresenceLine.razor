@@ -1,0 +1,28 @@
+@inherits PresenceAware
+@inject PresenceCircuit Circuit
+
+@if (SignedIn)
+{
+    <form method="post" action="/auth/logout" class="presence-form">
+        <button type="submit" class="presence-chip is-self" title="@R["Nav_Logout"]">
+            <span class="live-dot is-soft"></span><i class="bi bi-box-arrow-right"></i>@ShortText
+        </button>
+    </form>
+}
+else if (AdminName is not null)
+{
+    <button type="button" class="presence-chip @PresenceState" title="@($"{AdminName} · {StatusText}")" @onclick="OnLogin">
+        <span class="live-dot @DotState"></span>@ShortText
+    </button>
+}
+
+@code {
+    [Parameter] public EventCallback OnLogin { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender && SignedIn)
+            Circuit.MarkAdmin();
+    }
+}

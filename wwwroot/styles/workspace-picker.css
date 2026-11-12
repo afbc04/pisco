@@ -1,35 +1,247 @@
-.ws-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.ws-switch {
+    position: relative;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: calc(100% + 0.35rem);
+    margin-left: -0.35rem;
 }
 
-.ws-option {
+.ws-trigger {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.6rem 0.85rem;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.1rem 0.35rem;
+    border: none;
+    border-radius: 0.4rem;
+    background: none;
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    transition: background-color 0.12s ease;
+}
+
+button.ws-trigger:hover,
+.ws-trigger.is-open {
+    background: color-mix(in srgb, var(--heading) 11%, transparent);
+}
+
+.ws-trigger:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.ws-trigger-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ws-trigger-chev {
+    font-size: 0.6rem;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+}
+
+.ws-trigger.is-open .ws-trigger-chev {
+    transform: rotate(180deg);
+}
+
+.ws-public {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+    font-size: 0.66rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+[data-bs-theme="light"] .ws-public {
+    color: color-mix(in srgb, var(--success) 80%, #000);
+}
+
+.ws-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+}
+
+@keyframes ws-pop-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ws-pop {
+    position: absolute;
+    top: calc(100% + 0.3rem);
+    left: 0;
+    z-index: 2;
+    width: min(16rem, calc(100vw - 4rem));
+    max-height: min(60vh, 24rem);
+    overflow-y: auto;
+    padding: 0.25rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
-    background: none;
-    color: var(--body-color);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
+    background: var(--surface);
+    box-shadow: 0 10px 30px var(--shadow);
+    animation: ws-pop-in 0.12s ease;
 }
 
-.ws-option:hover,
-.ws-option.is-active {
-    border-color: var(--primary);
-}
-
-.ws-option.is-active {
-    background: var(--primary-tint);
-}
-
-.ws-option-name {
+.ws-pop-label {
+    padding: 0.4rem 0.5rem 0.25rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    color: var(--muted);
+}
+
+.ws-pop-note {
+    padding: 0.35rem 0.5rem 0.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.ws-pop-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 2rem;
+    padding: 0 0.5rem;
+    border: none;
+    border-radius: 0.3rem;
+    background: none;
     color: var(--heading);
+    font: inherit;
+    font-size: 0.82rem;
+    text-align: left;
+}
+
+.ws-pop-item:hover,
+.ws-pop-item:focus-visible {
+    background: var(--primary-soft);
+    outline: none;
+}
+
+.ws-pop-item.is-active {
+    background: color-mix(in srgb, var(--heading) 8%, transparent);
+    font-weight: 600;
+}
+
+.ws-pop-item.is-muted {
+    color: var(--muted);
+}
+
+.ws-pop-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ws-pop-check {
+    margin-left: auto;
+    color: var(--heading);
+    visibility: hidden;
+}
+
+.ws-pop-item .ws-public + .ws-pop-check {
+    margin-left: 0.25rem;
+}
+
+.ws-pop-item .ws-public {
+    margin-left: auto;
+}
+
+.ws-pop-item.is-active .ws-pop-check {
+    visibility: visible;
+}
+
+.ws-pop-sep {
+    height: 1px;
+    margin: 0.25rem -0.25rem;
+    background: var(--divider);
+}
+
+.sidenav-brand {
+    position: relative;
+}
+
+.sidenav .ws-switch {
+    position: static;
+}
+
+.sidenav .ws-pop {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+}
+
+.ws-avatar {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 0.5rem;
+    background: var(--surface-2);
+    color: var(--heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.ws-tag {
+    flex: 0 0 auto;
+    padding: 0.05rem 0.5rem;
+    border-radius: 1rem;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.ws-inline {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ws-inline .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ws-section + .ws-section {
+    margin-top: 1.4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--divider);
+}
+
+.ws-section-title {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.ws-hint {
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.ws-danger .ws-section-title {
+    color: var(--danger);
 }

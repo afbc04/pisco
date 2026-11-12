@@ -1,0 +1,27 @@
+<div class="editor-backdrop" @onclick="OnClose"></div>
+<div class="editor-modal @(Small ? "is-small" : null)" role="dialog" aria-modal="true">
+    <div class="editor-modal-head">
+        <h5 class="editor-modal-title">@Title</h5>
+        <button type="button" class="editor-close" aria-label="Close" @onclick="OnClose"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="editor-modal-body">
+        <div class="editor-content">
+            @ChildContent
+        </div>
+    </div>
+    @if (Footer is not null)
+    {
+        <div class="editor-modal-foot">
+            @Footer
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public bool Small { get; set; }
+}

@@ -1,0 +1,77 @@
+@inject IStringLocalizer<Resources> L
+@inject ConfigService ConfigSvc
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<section class="panel-card">
+    <header class="panel-card-head">
+        <div>
+            <h2 class="panel-card-title"><i class="bi bi-sliders"></i> @L["Params_Config"]</h2>
+            <p class="panel-card-hint">@L["Params_Config_Hint"]</p>
+        </div>
+    </header>
+
+    <div class="panel-card-body">
+        @if (Config is null || publicWorkspaces is null)
+        {
+            <p class="text-muted m-0">@L["Common_Loading"]</p>
+        }
+        else
+        {
+            <div class="panel-field">
+                <label class="form-label" for="config-username"><i class="bi bi-person-circle"></i> @L["Config_Username"]</label>
+                <input id="config-username" class="form-control form-control-sm" value="@Config.Username" disabled />
+                <div class="form-text">@L["Config_Username_Hint"]</div>
+            </div>
+            <div class="panel-field">
+                <label class="form-label" for="config-landing"><i class="bi bi-house"></i> @L["Config_Landing"]</label>
+                @if (publicWorkspaces.Count == 0)
+                {
+                    <input id="config-landing" class="form-control form-control-sm" value="@L["Config_Landing_None"]" disabled />
+                }
+                else
+                {
+                    <select id="config-landing" class="form-select form-select-sm"
+                            value="@Config.LandingWorkspaceId" @onchange="setLandingAsync" disabled="@busy">
+                        @foreach (var ws in publicWorkspaces)
+                        {
+                            <option value="@ws.Id">@ws.Name</option>
+                        }
+                    </select>
+                }
+                <div class="form-text">@L["Config_Landing_Hint"]</div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public Domain.Config? Config { get; set; }
+    [Parameter] public List<Workspace>? Workspaces { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private bool busy;
+
+    private List<Workspace>? publicWorkspaces => Workspaces?.Where(w => w.IsPublic).ToList();
+
+    private async Task setLandingAsync(ChangeEventArgs e)
+    {
+        if (!long.TryParse(e.Value?.ToString(), out var id) || id == Config?.LandingWorkspaceId)
+            return;
+        busy = true;
+        try
+        {
+            await ConfigSvc.SetLandingAsync(id, (await AuthProvider.GetAuthenticationStateAsync()).User);
+            Toasts.Success(L["Config_Saved"]);
+        }
+        catch (DomainException ex)
+        {
+            Toasts.Error(L[ex.Message, ex.Args]);
+        }
+        finally
+        {
+            busy = false;
+            await OnChanged.InvokeAsync();
+        }
+    }
+}

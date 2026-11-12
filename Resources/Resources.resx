@@ -62,10 +62,7 @@
     <value>Sign out</value>
   </data>
   <data name="Nav_ToggleSidebar" xml:space="preserve">
-    <value>Collapse / expand</value>
-  </data>
-  <data name="Nav_PinSidebar" xml:space="preserve">
-    <value>Pin sidebar</value>
+    <value>Menu</value>
   </data>
   <data name="Error_Unhandled" xml:space="preserve">
     <value>An unhandled error has occurred.</value>
@@ -81,15 +78,6 @@
   </data>
   <data name="NotFound_Home" xml:space="preserve">
     <value>Home</value>
-  </data>
-  <data name="Login_Subtitle" xml:space="preserve">
-    <value>Sign in to continue.</value>
-  </data>
-  <data name="Login_InvalidCredentials" xml:space="preserve">
-    <value>Invalid credentials.</value>
-  </data>
-  <data name="Login_Username" xml:space="preserve">
-    <value>Username</value>
   </data>
   <data name="Login_Password" xml:space="preserve">
     <value>Password</value>
@@ -124,22 +112,310 @@
   <data name="Ws_None" xml:space="preserve">
     <value>No workspace</value>
   </data>
-  <data name="Ws_Pick_Title" xml:space="preserve">
-    <value>Workspaces</value>
-  </data>
   <data name="Ws_Pick_Empty" xml:space="preserve">
     <value>You don't have access to any workspace yet. Ask the administrator to add you to one.</value>
-  </data>
-  <data name="Ws_IsDemo" xml:space="preserve">
-    <value>Demo</value>
   </data>
   <data name="Nav_Login" xml:space="preserve">
     <value>Sign in</value>
   </data>
-  <data name="UserType_Admin" xml:space="preserve">
-    <value>Administrator</value>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
   </data>
-  <data name="UserType_User" xml:space="preserve">
-    <value>User</value>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Common_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Nav_Demo" xml:space="preserve">
+    <value>Demo</value>
+  </data>
+  <data name="Demo_Title" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="Demo_Intro" xml:space="preserve">
+    <value>The app's shared components and styles, to see and try out.</value>
+  </data>
+  <data name="Demo_Header_Title" xml:space="preserve">
+    <value>Page header</value>
+  </data>
+  <data name="Demo_Header_Text" xml:space="preserve">
+    <value>The top of this page: title on the left and actions on the right (page-head + page-actions).</value>
+  </data>
+  <data name="Demo_Toasts_Title" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Demo_Toasts_Text" xml:space="preserve">
+    <value>They show up in the bottom right corner with a title and a message and go away after 4 seconds (ToastService).</value>
+  </data>
+  <data name="Demo_Toast_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Demo_Toast_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Demo_Toast_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Demo_Toast_SuccessMessage" xml:space="preserve">
+    <value>That went well.</value>
+  </data>
+  <data name="Demo_Toast_ErrorMessage" xml:space="preserve">
+    <value>Something went wrong.</value>
+  </data>
+  <data name="Demo_Toast_InfoMessage" xml:space="preserve">
+    <value>Just so you know.</value>
+  </data>
+  <data name="Demo_Modal_Title" xml:space="preserve">
+    <value>Dialogs</value>
+  </data>
+  <data name="Demo_Modal_Text" xml:space="preserve">
+    <value>EntryModal: large for editors, small for confirmations (on phones the small one slides up from the bottom).</value>
+  </data>
+  <data name="Demo_Modal_Large" xml:space="preserve">
+    <value>Large dialog</value>
+  </data>
+  <data name="Demo_Modal_Small" xml:space="preserve">
+    <value>Small dialog</value>
+  </data>
+  <data name="Demo_Modal_Form" xml:space="preserve">
+    <value>Form with validation</value>
+  </data>
+  <data name="Demo_Modal_Body" xml:space="preserve">
+    <value>Dialog content. Close it with the ×, with the footer button or by clicking outside.</value>
+  </data>
+  <data name="Demo_Form_Required" xml:space="preserve">
+    <value>This field is required.</value>
+  </data>
+  <data name="Demo_Form_Fix" xml:space="preserve">
+    <value>Fix the highlighted fields.</value>
+  </data>
+  <data name="Demo_Form_Saved" xml:space="preserve">
+    <value>Saved: {0}</value>
+  </data>
+  <data name="Demo_Collapse_Title" xml:space="preserve">
+    <value>Collapsible section</value>
+  </data>
+  <data name="Demo_Collapse_Item" xml:space="preserve">
+    <value>Item {0}</value>
+  </data>
+  <data name="Demo_Search_Title" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Demo_Search_Placeholder" xml:space="preserve">
+    <value>Search city…</value>
+  </data>
+  <data name="Demo_Search_Empty" xml:space="preserve">
+    <value>Nothing found.</value>
+  </data>
+  <data name="Demo_Base_Title" xml:space="preserve">
+    <value>Basic elements</value>
+  </data>
+  <data name="Demo_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Demo_Link" xml:space="preserve">
+    <value>Link</value>
+  </data>
+  <data name="Demo_Select" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="Demo_Range" xml:space="preserve">
+    <value>Range: {0}</value>
+  </data>
+  <data name="Demo_Check" xml:space="preserve">
+    <value>Option enabled</value>
+  </data>
+  <data name="Demo_Hint" xml:space="preserve">
+    <value>Help text below a field.</value>
+  </data>
+  <data name="Demo_Alert_Danger" xml:space="preserve">
+    <value>Error message.</value>
+  </data>
+  <data name="Demo_Alert_Warning" xml:space="preserve">
+    <value>Warning message.</value>
+  </data>
+  <data name="Demo_Badge" xml:space="preserve">
+    <value>Badge</value>
+  </data>
+  <data name="Toast_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Toast_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Toast_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Toast_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Demo_Toast_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Demo_Toast_WarningMessage" xml:space="preserve">
+    <value>Watch out for this.</value>
+  </data>
+  <data name="Demo_Toast_Custom" xml:space="preserve">
+    <value>Custom title</value>
+  </data>
+  <data name="Demo_Toast_CustomTitle" xml:space="preserve">
+    <value>Invoice paid</value>
+  </data>
+  <data name="Demo_Toast_CustomMessage" xml:space="preserve">
+    <value>The March invoice was marked as paid.</value>
+  </data>
+  <data name="Demo_Modal_Tabs" xml:space="preserve">
+    <value>Modal with side tabs</value>
+  </data>
+  <data name="Demo_Tabs_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Demo_Tabs_Advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Demo_Tabs_Active" xml:space="preserve">
+    <value>Active tab: {0}</value>
+  </data>
+  <data name="Params_Title" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="Ws_Landing" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Ws_Landing_Hint" xml:space="preserve">
+    <value>Shown to visitors who are not signed in</value>
+  </data>
+  <data name="Ws_New" xml:space="preserve">
+    <value>New workspace</value>
+  </data>
+  <data name="Ws_Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Ws_Created" xml:space="preserve">
+    <value>Workspace "{0}" created.</value>
+  </data>
+  <data name="Ws_Deleted" xml:space="preserve">
+    <value>Workspace "{0}" deleted.</value>
+  </data>
+  <data name="Ws_Delete" xml:space="preserve">
+    <value>Delete workspace</value>
+  </data>
+  <data name="Ws_Delete_Hint" xml:space="preserve">
+    <value>Deletes the workspace and all of its data. This cannot be undone.</value>
+  </data>
+  <data name="Ws_Delete_Confirm" xml:space="preserve">
+    <value>Type &lt;strong&gt;{0}&lt;/strong&gt; to confirm.</value>
+  </data>
+  <data name="Domain_Workspace_LandingDelete" xml:space="preserve">
+    <value>The home workspace cannot be deleted: it is what visitors see.</value>
+  </data>
+  <data name="Ws_Edit" xml:space="preserve">
+    <value>Edit workspace</value>
+  </data>
+  <data name="Ws_Saved" xml:space="preserve">
+    <value>Workspace saved.</value>
+  </data>
+  <data name="Params_Workspaces" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Params_Workspaces_Hint" xml:space="preserve">
+    <value>Each workspace keeps its own data.</value>
+  </data>
+  <data name="Modal_CollapseTabs" xml:space="preserve">
+    <value>Collapse tabs</value>
+  </data>
+  <data name="Modal_ExpandTabs" xml:space="preserve">
+    <value>Expand tabs</value>
+  </data>
+  <data name="Ws_Manage" xml:space="preserve">
+    <value>Manage workspaces</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Session_SignedIn" xml:space="preserve">
+    <value>Signed in</value>
+  </data>
+  <data name="Ws_Public" xml:space="preserve">
+    <value>Public</value>
+  </data>
+  <data name="Ws_Public_Hint" xml:space="preserve">
+    <value>Visitors who are not signed in can open it.</value>
+  </data>
+  <data name="Params_Config" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="Params_Config_Hint" xml:space="preserve">
+    <value>General settings, stored in pisco_config.config.</value>
+  </data>
+  <data name="Config_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Config_Username_Hint" xml:space="preserve">
+    <value>The only account; it can be changed in the config table.</value>
+  </data>
+  <data name="Config_Landing" xml:space="preserve">
+    <value>Home workspace</value>
+  </data>
+  <data name="Config_Landing_Hint" xml:space="preserve">
+    <value>Where visitors land. It must be public.</value>
+  </data>
+  <data name="Config_Landing_None" xml:space="preserve">
+    <value>No public workspace</value>
+  </data>
+  <data name="Config_Saved" xml:space="preserve">
+    <value>Configuration saved.</value>
+  </data>
+  <data name="Domain_Config_LandingMustBePublic" xml:space="preserve">
+    <value>The home workspace must be public.</value>
+  </data>
+  <data name="Domain_Config_PasswordTooShort" xml:space="preserve">
+    <value>The password must have at least {0} characters.</value>
+  </data>
+  <data name="Domain_Config_Missing" xml:space="preserve">
+    <value>The configuration is missing.</value>
+  </data>
+  <data name="Domain_SignInRequired" xml:space="preserve">
+    <value>You need to sign in.</value>
+  </data>
+  <data name="Presence_Online" xml:space="preserve">
+    <value>online</value>
+  </data>
+  <data name="Presence_OnlineNow" xml:space="preserve">
+    <value>online now</value>
+  </data>
+  <data name="Presence_Offline" xml:space="preserve">
+    <value>offline</value>
+  </data>
+  <data name="Presence_LastSeen" xml:space="preserve">
+    <value>seen {0} ago</value>
+  </data>
+  <data name="Presence_JustNow" xml:space="preserve">
+    <value>moments</value>
+  </data>
+  <data name="Presence_Minutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="Presence_Hours" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="Presence_Days" xml:space="preserve">
+    <value>{0} d</value>
+  </data>
+  <data name="Login_WrongPassword" xml:space="preserve">
+    <value>Wrong password.</value>
+  </data>
+  <data name="Presence_Ago" xml:space="preserve">
+    <value>{0} ago</value>
   </data>
 </root>

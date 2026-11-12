@@ -1,0 +1,114 @@
+@implements IDisposable
+@inject IStringLocalizer<Resources> L
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+@inject NavigationManager Nav
+
+<div class="ws-switch">
+    <button type="button" class="ws-trigger @(open ? "is-open" : null)" title="@L["SideNav_CurrentWorkspace"]"
+            aria-haspopup="listbox" aria-expanded="@open" @onclick="toggleAsync">
+        <span class="ws-trigger-name">@(WsState.Current?.Name ?? L["Ws_None"])</span>
+        <i class="bi bi-chevron-down ws-trigger-chev"></i>
+    </button>
+
+    @if (open)
+    {
+        <div class="ws-scrim" @onclick="close"></div>
+        <div class="ws-pop" @onkeydown="onKey">
+            <div class="ws-pop-label">@L["Params_Workspaces"]</div>
+            @if (accessible is null)
+            {
+                <div class="ws-pop-note">@L["Common_Loading"]</div>
+            }
+            else if (accessible.Count == 0)
+            {
+                <div class="ws-pop-note">@L["Ws_Pick_Empty"]</div>
+            }
+            else
+            {
+                <div role="listbox" aria-label="@L["Params_Workspaces"]">
+                    @foreach (var ws in accessible)
+                    {
+                        var active = WsState.Current?.Id == ws.Id;
+                        <button type="button" role="option" aria-selected="@active" class="ws-pop-item @(active ? "is-active" : null)"
+                                @onclick="() => selectAsync(ws.Id)">
+                            <span class="ws-pop-name">@ws.Name</span>
+                            @if (!active && signedIn && ws.IsPublic)
+                            {
+                                <span class="ws-public" title="@L["Ws_Public_Hint"]"><i class="bi bi-globe2"></i> @L["Ws_Public"]</span>
+                            }
+                            <i class="bi bi-check-lg ws-pop-check"></i>
+                        </button>
+                    }
+                </div>
+            }
+            @if (signedIn)
+            {
+                <div class="ws-pop-sep"></div>
+                <button type="button" class="ws-pop-item is-muted" @onclick="manage">
+                    <i class="bi bi-gear"></i>
+                    <span class="ws-pop-name">@L["Ws_Manage"]</span>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool signedIn;
+    private bool open;
+    private List<Workspace>? accessible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += onWsChanged;
+        var user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        signedIn = user.IsSignedIn();
+        await WsState.EnsureLoadedAsync();
+    }
+
+    private async Task toggleAsync()
+    {
+        if (open)
+        {
+            close();
+            return;
+        }
+        open = true;
+        accessible = null;
+        accessible = await WsState.ListAccessibleAsync();
+    }
+
+    private void close() => open = false;
+
+    private void onKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            close();
+    }
+
+    private async Task selectAsync(long id)
+    {
+        try
+        {
+            if (WsState.Current?.Id != id)
+                await WsState.SelectAsync(id);
+            close();
+        }
+        catch (DomainException ex)
+        {
+            Toasts.Error(L[ex.Message, ex.Args]);
+        }
+    }
+
+    private void manage()
+    {
+        close();
+        Nav.NavigateTo(AppRoutes.Parameters);
+    }
+
+    private void onWsChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => WsState.Changed -= onWsChanged;
+}

@@ -1,0 +1,178 @@
+.tab-view {
+    display: flex;
+    min-height: 0;
+}
+
+.tab-rail {
+    flex: 0 0 13rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.9rem 0.6rem;
+    border-right: 1px solid var(--divider);
+    background: color-mix(in srgb, var(--surface-2) 45%, var(--surface));
+    overflow-y: auto;
+    transition: flex-basis 0.15s ease;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: none;
+    color: var(--body-color);
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.tab-btn:hover:not(:disabled) {
+    background: var(--primary-soft);
+    color: var(--heading);
+}
+
+.tab-btn.is-active {
+    background: var(--primary-tint);
+    color: var(--heading);
+    font-weight: 600;
+}
+
+.tab-btn .bi {
+    flex: 0 0 auto;
+    color: var(--muted);
+}
+
+.tab-btn.is-active .bi {
+    color: var(--primary);
+}
+
+.tab-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.tab-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+.tab-btn-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab-btn-badge {
+    flex: 0 0 auto;
+    min-width: 1.4rem;
+    padding: 0 0.4rem;
+    border-radius: 1rem;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.tab-rail-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: none;
+    color: var(--muted);
+}
+
+.tab-rail-toggle:hover {
+    background: var(--primary-soft);
+    color: var(--heading);
+}
+
+.tab-view.is-collapsed .tab-rail {
+    flex-basis: 3.6rem;
+}
+
+.tab-view.is-collapsed .tab-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.tab-view.is-collapsed .tab-btn-title,
+.tab-view.is-collapsed .tab-btn-badge {
+    display: none;
+}
+
+.tab-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-panel-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.tab-panel-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    border-top: 1px solid var(--divider);
+}
+
+@media (max-width: 767.98px) {
+    .tab-view {
+        flex-direction: column;
+    }
+
+    .tab-rail {
+        flex: 0 0 auto;
+        flex-direction: row;
+        padding: 0.5rem;
+        border-right: none;
+        border-bottom: 1px solid var(--divider);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+
+    .tab-btn {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    .tab-btn-title {
+        overflow: visible;
+    }
+
+    .tab-rail-toggle {
+        display: none;
+    }
+
+    .tab-view.is-collapsed .tab-btn-title,
+    .tab-view.is-collapsed .tab-btn-badge {
+        display: inline;
+    }
+
+    .tab-panel-content {
+        padding: 1rem;
+    }
+
+    .tab-panel-foot {
+        padding: 0.75rem 1rem;
+    }
+}

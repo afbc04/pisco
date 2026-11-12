@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" data-bs-theme="@theme">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="fonts/open-sans/open-sans.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/sidenav.css" />
+    <link rel="stylesheet" href="styles/modal.css" />
+    <link rel="stylesheet" href="styles/tabs.css" />
+    <link rel="stylesheet" href="styles/workspace-picker.css" />
+    <link rel="stylesheet" href="styles/notfound.css" />
+    <link rel="stylesheet" href="styles/page.css" />
+    <link rel="stylesheet" href="styles/toast.css" />
+    <link rel="icon" type="image/jpg" href="favicon.jpg" />
+    <script src="app.js"></script>
+    <HeadOutlet @rendermode="pageRenderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="pageRenderMode" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+    private string theme => HttpContext?.Request.Cookies["pisco-theme"] == "light" ? "light" : "dark";
+
+    private IComponentRenderMode? pageRenderMode =>
+        HttpContext?.Request.Path.StartsWithSegments("/Error") == true
+            ? null
+            : InteractiveServer;
+}

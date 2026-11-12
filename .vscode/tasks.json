@@ -2,12 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "db",
-      "type": "shell",
-      "command": "docker compose up -d --wait db",
-      "problemMatcher": []
-    },
-    {
       "label": "build",
       "type": "process",
       "command": "dotnet",
@@ -18,7 +12,68 @@
     {
       "label": "start",
       "dependsOrder": "sequence",
-      "dependsOn": ["db", "build"]
+      "dependsOn": ["db: up", "build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "db: up",
+      "type": "shell",
+      "command": "docker compose up -d --wait db",
+      "problemMatcher": []
+    },
+    {
+      "label": "db: stop",
+      "type": "shell",
+      "command": "docker compose stop db",
+      "problemMatcher": []
+    },
+    {
+      "label": "db: psql",
+      "type": "shell",
+      "command": "docker compose exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
+      "presentation": { "focus": true, "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "db: reset (apaga os dados)",
+      "type": "shell",
+      "command": "if [ \"${input:confirmReset}\" = \"sim\" ]; then docker compose down -v; else echo 'Cancelado.'; fi",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: up",
+      "type": "shell",
+      "command": "docker compose up -d --build --wait",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: debug",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d --build --wait",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: down",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: logs",
+      "type": "shell",
+      "command": "docker compose logs -f pisco",
+      "isBackground": true,
+      "presentation": { "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "confirmReset",
+      "type": "pickString",
+      "description": "Apagar a base de dados e todos os dados do Pisco?",
+      "options": ["não", "sim"],
+      "default": "não"
     }
   ]
 }

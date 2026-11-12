@@ -1,0 +1,136 @@
+@implements IDisposable
+@using System.Globalization
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject IStringLocalizer<Resources> R
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+@inject WorkspaceState WsState
+@inject IJSRuntime JS
+
+<header class="mobilebar">
+    <label for="sidebar-drawer" class="mobilebar-btn" title="@R["Nav_ToggleSidebar"]"><i class="bi bi-list"></i></label>
+    @brandLogo("mobilebar-logo")
+    <span class="mobilebar-brand">
+        @brandTitle("mobilebar-title")
+        <WorkspaceMenu />
+    </span>
+</header>
+
+<aside class="sidenav">
+    <div class="sidenav-brand">
+        @brandLogo("sidenav-logo")
+        <span class="sidenav-brand-text">
+            <span class="brand-row">
+                @brandTitle("sidenav-title")
+                <span class="brand-tools">
+                    <button type="button" class="brand-tool sidenav-theme" onclick="toggleTheme()" title="@R["Nav_Theme"]"><i class="bi bi-moon-stars theme-dark-icon"></i><i class="bi bi-sun theme-light-icon"></i></button>
+                    <a class="brand-tool brand-lang" href="/culture/set?culture=@(isPt ? "en" : "pt")&redirectUri=@returnPath" data-enhance-nav="false" title="@(isPt ? "English" : "Português")"><i class="bi bi-translate"></i><span>@(isPt ? "PT" : "EN")</span></a>
+                </span>
+            </span>
+            <span class="brand-row">
+                <WorkspaceMenu />
+                <PresenceLine SignedIn="signedIn" OnLogin="openLogin" />
+            </span>
+        </span>
+    </div>
+
+    <nav class="sidenav-main">
+        @foreach (var item in menu.Where(i => signedIn || !i.Auth))
+        {
+            <a class="sidenav-tab @(isActive(item.Route) ? "is-active" : null)" href="@item.Route" title="@R[item.Label]">
+                <i class="bi bi-@item.Icon"></i>
+                <span class="sidenav-tab-text">@R[item.Label]</span>
+            </a>
+        }
+    </nav>
+</aside>
+
+@if (loginOpen)
+{
+    <LoginModal ReturnUrl="@loginReturnUrl" Failed="loginFailed" OnClose="() => loginOpen = false" />
+}
+
+@code {
+    private sealed record MenuItem(string Icon, string Label, string Route, bool Auth = true);
+
+    private static readonly MenuItem[] menu =
+    [
+        new("speedometer2", "Nav_Home", AppRoutes.Home, Auth: false),
+        new("grid-1x2", "Nav_Demo", AppRoutes.Demo, Auth: false),
+        new("gear", "Params_Title", AppRoutes.Parameters),
+    ];
+
+    private bool signedIn;
+    private bool loginOpen;
+    private bool loginFailed;
+    private string loginReturnUrl = "/";
+
+    private bool isPt => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "pt";
+    private string currentPath => "/" + Nav.ToBaseRelativePath(Nav.Uri);
+    private string returnPath => Uri.EscapeDataString(currentPath);
+    private string? brandState => signedIn ? "is-live" : null;
+    private string brandHint => R[signedIn ? "Session_SignedIn" : "Nav_Login"];
+
+    private RenderFragment brandLogo(string imgClass) =>
+        @<button type="button" class="brand-logo @brandState" title="@brandHint" @onclick="openLogin">
+            <img class="@imgClass" src="img/boria.jpg" alt="" />
+            @if (signedIn)
+            {
+                <span class="live-dot is-soft"></span>
+            }
+        </button>;
+
+    private RenderFragment brandTitle(string titleClass) =>
+        @<button type="button" class="brand-title @titleClass @brandState" title="@brandHint" @onclick="openLogin">Pisco</button>;
+
+    private bool isActive(string route)
+    {
+        var path = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/');
+        return path == route || (route.Length > 0 && path.StartsWith(route + "/"));
+    }
+
+    private void openLogin()
+    {
+        if (signedIn)
+            return;
+        loginFailed = false;
+        loginReturnUrl = currentPath;
+        loginOpen = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += onWsChanged;
+        Nav.LocationChanged += onLocationChanged;
+        signedIn = (await AuthProvider.GetAuthenticationStateAsync()).User.IsSignedIn();
+        var query = QueryHelpers.ParseQuery(new Uri(Nav.Uri).Query);
+        if (!signedIn && query.TryGetValue(AppRoutes.LoginParam, out var login))
+        {
+            loginOpen = true;
+            loginFailed = login == AppRoutes.LoginFailed;
+            loginReturnUrl = query.TryGetValue(AppRoutes.ReturnUrlParam, out var back) ? back.ToString() : "/";
+        }
+        await WsState.EnsureLoadedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && loginOpen)
+            Nav.NavigateTo(Nav.GetUriWithQueryParameters(new Dictionary<string, object?> { [AppRoutes.LoginParam] = null, [AppRoutes.ReturnUrlParam] = null }), replace: true);
+    }
+
+    private void onWsChanged() => InvokeAsync(StateHasChanged);
+
+    private void onLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(async () =>
+    {
+        StateHasChanged();
+        await JS.InvokeVoidAsync("piscoCloseDrawer");
+    });
+
+    public void Dispose()
+    {
+        WsState.Changed -= onWsChanged;
+        Nav.LocationChanged -= onLocationChanged;
+    }
+}

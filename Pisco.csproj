@@ -9,12 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Npgsql.DependencyInjection" Version="8.0.6" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="data/sql/*.sql" LogicalName="sql/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Data/Sql/*.sql" LogicalName="sql/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
