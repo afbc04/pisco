@@ -66,7 +66,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
-    await ConfigSchema.EnsureCreatedAsync(sp.GetRequiredService<NpgsqlDataSource>());
+    await DbSchema.EnsureCreatedAsync(sp.GetRequiredService<NpgsqlDataSource>());
     await SeedData.SeedAsync(sp.GetRequiredService<WorkspaceService>(), sp.GetRequiredService<ConfigService>());
 }
 

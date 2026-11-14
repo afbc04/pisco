@@ -5,8 +5,6 @@ namespace Pisco.Data;
 
 public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContext(options)
 {
-    public const string Schema = "pisco_config";
-
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<Config> Config => Set<Config>();
 
@@ -14,7 +12,7 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
     {
         model.Entity<Workspace>(ws =>
         {
-            ws.ToTable("workspaces", Schema);
+            ws.ToTable("workspaces");
             ws.HasKey(w => w.Id);
 
             ws.Property(w => w.Id).HasColumnName("id").UseIdentityAlwaysColumn();
@@ -24,7 +22,7 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
 
         model.Entity<Config>(config =>
         {
-            config.ToTable("config", Schema);
+            config.ToTable("config");
             config.HasKey(c => c.Id);
 
             config.Property(c => c.Id).HasColumnName("id").ValueGeneratedNever();

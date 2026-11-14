@@ -169,7 +169,7 @@ Para voltar à imagem normal, corre outra vez o comando da forma **b)**.
 
 No primeiro arranque a app cria as tabelas e também:
 
-- a conta **`admin`** com a palavra-passe **`admin`** (na tabela `pisco_config.config`);
+- a conta **`admin`** com a palavra-passe **`admin`** (na tabela `config`);
 - a workspace **`demo`**, pública e definida como workspace inicial.
 
 Muda a palavra-passe do `admin` se a app ficar acessível a outras pessoas.
@@ -184,12 +184,13 @@ O PostgreSQL só aceita ligações do próprio PC (`127.0.0.1`). Para ligar com 
 jdbc:postgresql://localhost:5432/pisco?user=pisco&password=pisco
 ```
 
-(Troca os valores se mudaste o `.env`.) Tudo fica no schema `pisco_config`, que tem só duas tabelas:
+(Troca os valores se mudaste o `.env`.) Todas as tabelas ficam no schema por omissão (`public`):
 
 | Tabela | Conteúdo |
 |---|---|
 | `workspaces` | Nome e se é pública |
 | `config` | Uma única linha: utilizador e palavra-passe (hash), workspace inicial e última workspace escolhida |
+| `transactions` | Transações financeiras: despesas, receitas, transferências e ajustes de saldo |
 
 Os dados de cada workspace (quando existirem) ficam em tabelas com uma coluna `workspace_id`.
 
@@ -211,7 +212,7 @@ Components/        páginas e layout (Blazor)
   Pages/           páginas (Início, Demo, Parâmetros, Erro)
   Parameters/      secções e mini modais da página Parâmetros
 Data/              acesso à BD (Entity Framework Core), SQL e seed
-  Sql/             config.sql (schema pisco_config)
+  Sql/             config.sql, finance.sql
 Domain/            entidades (Config, Workspace)
 Services/          configuração, autenticação, workspaces, toasts
 Resources/         traduções (pt / en)
