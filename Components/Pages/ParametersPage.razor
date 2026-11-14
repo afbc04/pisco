@@ -1,6 +1,7 @@
 @page "/parameters"
 @attribute [Authorize]
-@inject IStringLocalizer<Resources> L
+@inject IStringLocalizer<WorkspacesText> L
+@inject IStringLocalizer<DomainText> D
 @inject WorkspaceService Workspaces
 @inject ConfigService Config
 @inject AuthenticationStateProvider AuthProvider
@@ -37,7 +38,7 @@
         catch (DomainException ex)
         {
             workspaces = [];
-            Toasts.Error(L[ex.Message, ex.Args]);
+            Toasts.Error(D[ex.Message, ex.Args]);
         }
     }
 }

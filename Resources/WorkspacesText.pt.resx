@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Ws_Current" xml:space="preserve">
+    <value>Workspace atual</value>
+  </data>
+  <data name="Ws_None" xml:space="preserve">
+    <value>Sem workspace</value>
+  </data>
+  <data name="Ws_Pick_Empty" xml:space="preserve">
+    <value>Ainda não tens acesso a nenhum workspace. Pede ao administrador para te associar a um.</value>
+  </data>
+  <data name="Params_Title" xml:space="preserve">
+    <value>Parâmetros</value>
+  </data>
+  <data name="Ws_Landing" xml:space="preserve">
+    <value>Inicial</value>
+  </data>
+  <data name="Ws_Landing_Hint" xml:space="preserve">
+    <value>É a que aparece a quem não tem sessão iniciada</value>
+  </data>
+  <data name="Ws_New" xml:space="preserve">
+    <value>Nova workspace</value>
+  </data>
+  <data name="Ws_Create" xml:space="preserve">
+    <value>Criar</value>
+  </data>
+  <data name="Ws_Created" xml:space="preserve">
+    <value>Workspace "{0}" criada.</value>
+  </data>
+  <data name="Ws_Deleted" xml:space="preserve">
+    <value>Workspace "{0}" apagada.</value>
+  </data>
+  <data name="Ws_Delete" xml:space="preserve">
+    <value>Apagar workspace</value>
+  </data>
+  <data name="Ws_Delete_Hint" xml:space="preserve">
+    <value>Apaga a workspace e todos os seus dados. Não dá para desfazer.</value>
+  </data>
+  <data name="Ws_Delete_Confirm" xml:space="preserve">
+    <value>Escreve &lt;strong&gt;{0}&lt;/strong&gt; para confirmar.</value>
+  </data>
+  <data name="Ws_Edit" xml:space="preserve">
+    <value>Editar workspace</value>
+  </data>
+  <data name="Ws_Saved" xml:space="preserve">
+    <value>Workspace guardada.</value>
+  </data>
+  <data name="Params_Workspaces" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Params_Workspaces_Hint" xml:space="preserve">
+    <value>Cada workspace guarda os seus próprios dados.</value>
+  </data>
+  <data name="Ws_Manage" xml:space="preserve">
+    <value>Gerir workspaces</value>
+  </data>
+  <data name="Ws_Public" xml:space="preserve">
+    <value>Pública</value>
+  </data>
+  <data name="Ws_Public_Hint" xml:space="preserve">
+    <value>Quem não tem sessão iniciada pode abri-la.</value>
+  </data>
+  <data name="Params_Config" xml:space="preserve">
+    <value>Configuração</value>
+  </data>
+  <data name="Params_Config_Hint" xml:space="preserve">
+    <value>Definições gerais, guardadas em pisco_config.config.</value>
+  </data>
+  <data name="Config_Username" xml:space="preserve">
+    <value>Utilizador</value>
+  </data>
+  <data name="Config_Username_Hint" xml:space="preserve">
+    <value>A única conta; muda-se na tabela config.</value>
+  </data>
+  <data name="Config_Landing" xml:space="preserve">
+    <value>Workspace inicial</value>
+  </data>
+  <data name="Config_Landing_Hint" xml:space="preserve">
+    <value>Onde os visitantes começam. Tem de ser pública.</value>
+  </data>
+  <data name="Config_Landing_None" xml:space="preserve">
+    <value>Nenhuma workspace pública</value>
+  </data>
+  <data name="Config_Saved" xml:space="preserve">
+    <value>Configuração guardada.</value>
+  </data>
+</root>

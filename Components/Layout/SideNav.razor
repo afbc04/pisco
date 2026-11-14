@@ -2,7 +2,7 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.WebUtilities
 
-@inject IStringLocalizer<Resources> R
+@inject IStringLocalizer<LayoutText> R
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthProvider
 @inject WorkspaceState WsState
@@ -57,8 +57,9 @@
     private static readonly MenuItem[] menu =
     [
         new("speedometer2", "Nav_Home", AppRoutes.Home, Auth: false),
+        new("coin", "Nav_Finances", AppRoutes.Finances, Auth: false),
         new("grid-1x2", "Nav_Demo", AppRoutes.Demo, Auth: false),
-        new("gear", "Params_Title", AppRoutes.Parameters),
+        new("gear", "Nav_Parameters", AppRoutes.Parameters),
     ];
 
     private bool signedIn;

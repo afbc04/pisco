@@ -4,6 +4,7 @@ public static class AppRoutes
 {
     public const string Home = "";
     public const string Demo = "demo";
+    public const string Finances = "finances";
     public const string Parameters = "parameters";
 
     public const string LoginParam = "login";

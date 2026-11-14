@@ -1,12 +1,14 @@
 @implements IDisposable
-@inject IStringLocalizer<Resources> L
+@inject IStringLocalizer<WorkspacesText> L
+@inject IStringLocalizer<CommonText> C
+@inject IStringLocalizer<DomainText> D
 @inject WorkspaceState WsState
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
 @inject NavigationManager Nav
 
 <div class="ws-switch">
-    <button type="button" class="ws-trigger @(open ? "is-open" : null)" title="@L["SideNav_CurrentWorkspace"]"
+    <button type="button" class="ws-trigger @(open ? "is-open" : null)" title="@L["Ws_Current"]"
             aria-haspopup="listbox" aria-expanded="@open" @onclick="toggleAsync">
         <span class="ws-trigger-name">@(WsState.Current?.Name ?? L["Ws_None"])</span>
         <i class="bi bi-chevron-down ws-trigger-chev"></i>
@@ -19,7 +21,7 @@
             <div class="ws-pop-label">@L["Params_Workspaces"]</div>
             @if (accessible is null)
             {
-                <div class="ws-pop-note">@L["Common_Loading"]</div>
+                <div class="ws-pop-note">@C["Common_Loading"]</div>
             }
             else if (accessible.Count == 0)
             {
@@ -98,7 +100,7 @@
         }
         catch (DomainException ex)
         {
-            Toasts.Error(L[ex.Message, ex.Args]);
+            Toasts.Error(D[ex.Message, ex.Args]);
         }
     }
 

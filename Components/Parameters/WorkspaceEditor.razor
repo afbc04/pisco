@@ -1,5 +1,7 @@
 @using System.Security.Claims
-@inject IStringLocalizer<Resources> L
+@inject IStringLocalizer<WorkspacesText> L
+@inject IStringLocalizer<CommonText> C
+@inject IStringLocalizer<DomainText> D
 @inject WorkspaceService Workspaces
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
@@ -7,7 +9,7 @@
 <EntryModal Title="@L[isNew ? "Ws_New" : "Ws_Edit"]" Small="true" OnClose="OnClose">
     <ChildContent>
         <section class="ws-section">
-            <label class="ws-section-title" for="ws-name">@L["Common_Name"] <span class="required-mark">*</span></label>
+            <label class="ws-section-title" for="ws-name">@C["Common_Name"] <span class="required-mark">*</span></label>
             <input id="ws-name" class="form-control @(nameError is null ? null : "is-invalid")" maxlength="@Workspace.NameLengthMax"
                    @bind="name" @bind:event="oninput" @bind:after="() => nameError = null" autofocus />
             @if (nameError is not null)
@@ -21,7 +23,7 @@
                 <input type="checkbox" class="form-check-input" role="switch" @bind="isPublic" disabled="@IsLanding" />
                 <span class="form-check-label">@L["Ws_Public"]</span>
             </label>
-            <p class="ws-hint mb-0 mt-1">@L[IsLanding ? "Domain_Config_LandingMustBePublic" : "Ws_Public_Hint"]</p>
+            <p class="ws-hint mb-0 mt-1">@(IsLanding ? D["Domain_Config_LandingMustBePublic"] : L["Ws_Public_Hint"])</p>
         </section>
 
         @if (!isNew)
@@ -30,7 +32,7 @@
                 <div class="ws-section-title">@L["Ws_Delete"]</div>
                 @if (IsLanding)
                 {
-                    <p class="ws-hint mb-0">@L["Domain_Workspace_LandingDelete"]</p>
+                    <p class="ws-hint mb-0">@D["Domain_Workspace_LandingDelete"]</p>
                 }
                 else if (!confirmDelete)
                 {
@@ -44,16 +46,16 @@
                     <p class="ws-hint">@((MarkupString)L["Ws_Delete_Confirm", System.Net.WebUtility.HtmlEncode(Workspace!.Name)].Value)</p>
                     <div class="ws-inline">
                         <input class="form-control" aria-label="@L["Ws_Delete"]" @bind="confirmName" @bind:event="oninput" autofocus />
-                        <button type="button" class="btn btn-danger" disabled="@(busy || confirmName.Trim() != Workspace.Name)" @onclick="deleteAsync">@L["Common_Delete"]</button>
-                        <button type="button" class="btn btn-outline-secondary" title="@L["Common_Cancel"]" @onclick="() => confirmDelete = false"><i class="bi bi-x-lg"></i></button>
+                        <button type="button" class="btn btn-danger" disabled="@(busy || confirmName.Trim() != Workspace.Name)" @onclick="deleteAsync">@C["Common_Delete"]</button>
+                        <button type="button" class="btn btn-outline-secondary" title="@C["Common_Cancel"]" @onclick="() => confirmDelete = false"><i class="bi bi-x-lg"></i></button>
                     </div>
                 }
             </section>
         }
     </ChildContent>
     <Footer>
-        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="saveAsync">@L[isNew ? "Ws_Create" : "Common_Save"]</button>
-        <button type="button" class="btn btn-outline-secondary" @onclick="OnClose">@L["Common_Cancel"]</button>
+        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="saveAsync">@(isNew ? L["Ws_Create"] : C["Common_Save"])</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnClose">@C["Common_Cancel"]</button>
     </Footer>
 </EntryModal>
 
@@ -110,11 +112,11 @@
         }
         catch (DomainException ex) when (ex.Message.StartsWith("Domain_Name_"))
         {
-            nameError = L[ex.Message, ex.Args];
+            nameError = D[ex.Message, ex.Args];
         }
         catch (DomainException ex)
         {
-            Toasts.Error(L[ex.Message, ex.Args]);
+            Toasts.Error(D[ex.Message, ex.Args]);
         }
         finally
         {

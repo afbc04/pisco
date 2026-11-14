@@ -7,7 +7,7 @@ namespace Pisco.Components.Layout;
 public abstract class PresenceAware : ComponentBase, IDisposable
 {
     [Inject] protected AdminPresence Presence { get; set; } = default!;
-    [Inject] protected IStringLocalizer<Resources> R { get; set; } = default!;
+    [Inject] protected IStringLocalizer<LayoutText> R { get; set; } = default!;
     [Inject] private ConfigService Config { get; set; } = default!;
 
     [Parameter] public bool SignedIn { get; set; }

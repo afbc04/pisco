@@ -2,7 +2,8 @@
 @implements IDisposable
 @inject WorkspaceState WsState
 @inject AuthenticationStateProvider AuthProvider
-@inject IStringLocalizer<Resources> L
+@inject IStringLocalizer<LayoutText> L
+@inject IStringLocalizer<WorkspacesText> W
 
 <PageTitle>Pisco</PageTitle>
 
@@ -14,7 +15,7 @@
     }
     else
     {
-        @L["Ws_Pick_Empty"]
+        @W["Ws_Pick_Empty"]
     }
 </p>
 

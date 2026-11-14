@@ -1,0 +1,21 @@
+<div class="col-sm-6 col-xxl-3">
+    <div class="panel-card kpi" style="--k: @Color">
+        <div class="kpi-top">
+            <span class="kpi-icon"><i class="@Icon"></i></span>
+            <span class="kpi-label">@Label</span>
+            @Action
+        </div>
+        <div class="kpi-value">@Value</div>
+        <div class="kpi-chart is-empty"></div>
+        <div class="kpi-foot">@Foot</div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Icon { get; set; } = "";
+    [Parameter, EditorRequired] public string Color { get; set; } = "";
+    [Parameter] public RenderFragment? Value { get; set; }
+    [Parameter] public RenderFragment? Foot { get; set; }
+    [Parameter] public RenderFragment? Action { get; set; }
+}

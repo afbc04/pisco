@@ -1,0 +1,54 @@
+@inject IStringLocalizer<FinanceText> R
+
+<div class="row g-3 mb-4">
+
+    <!-- Revenue KPI -->
+    <FinanceKpiCard Label="@R["Fin_Income"]" Icon="bi bi-graph-up-arrow" Color="var(--success)">
+        <Action>@categoriesButton</Action>
+        <Value>@(0m.ToString("N2")) €</Value>
+        <Foot>@noPrevious</Foot>
+    </FinanceKpiCard>
+
+    <!--
+    <FinanceKpiCard Label="@R["Fin_Expenses"]" Icon="bi bi-arrow-up-right" Color="var(--danger)">
+        <Action>@categoriesButton</Action>
+        <Value>@(0m.ToString("N2")) €</Value>
+        <Foot>@noPrevious</Foot>
+    </FinanceKpiCard>
+
+    <FinanceKpiCard Label="@R["Fin_Kpi_Result"]" Icon="bi bi-plus-slash-minus" Color="var(--primary)">
+        <Value>@(0m.ToString("N2")) €</Value>
+        <Foot><span>@R["Fin_Kpi_ResultHint"]</span></Foot>
+    </FinanceKpiCard>
+
+    <FinanceKpiCard Label="@R["Fin_Kpi_BalanceNow"]" Icon="bi bi-safe2" Color="var(--balance)">
+        <Value>@(0m.ToString("N2")) €</Value>
+        <Foot>
+            <span class="delta is-good">@(0m.ToString("N2")) €</span>
+            <span>@R["Fin_Kpi_InPeriod"]</span>
+            <span class="kpi-proj" title="@R["Fin_Kpi_Forecast_Hint"]">
+                <i class="bi bi-graph-up-arrow"></i> @endOfMonth.ToString("d MMM"): <b>@(0m.ToString("N2")) €</b>
+            </span>
+        </Foot>
+    </FinanceKpiCard>
+    -->
+</div>
+
+@code {
+    private static DateOnly endOfMonth
+    {
+        get
+        {
+            var today = DateTime.Today;
+            return new(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+        }
+    }
+
+    private RenderFragment categoriesButton =>
+        @<button type="button" class="kpi-action" title="@R["Fin_Categories_Manage"]">
+            <i class="bi bi-tags"></i><span>@R["Fin_Categories"]</span>
+        </button>;
+
+    private RenderFragment noPrevious =>
+        @<span><span class="delta is-flat">—</span> @R["Fin_Kpi_NoPrevious"]</span>;
+}

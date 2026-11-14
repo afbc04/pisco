@@ -1,0 +1,34 @@
+@page "/finances"
+@inject IStringLocalizer<FinanceText> R
+
+<PageTitle>@R["Fin_Title"] · Pisco</PageTitle>
+
+<div>
+    <div class="page-head">
+        <div>
+            <h1>@R["Fin_Title"]</h1>
+            <p class="page-sub">
+                <i class="bi bi-calendar3"></i> @from.ToString("d MMM yyyy") – @today.ToString("d MMM yyyy")
+            </p>
+        </div>
+    </div>
+
+    <FinanceKpis />
+
+    <div class="row g-4 align-items-start">
+        <div class="col-xl-8">
+            <MovementsCard />
+        </div>
+        <div class="col-xl-4">
+            <div class="d-grid gap-4">
+                <WalletsCard />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly from => new DateOnly(today.Year, today.Month, 1).AddMonths(-2);
+}
