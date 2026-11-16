@@ -1,0 +1,39 @@
+@foreach (var (part, hit) in parts)
+{
+    @if (hit)
+    {
+        <mark class="px-0 rounded-1">@part</mark>
+    }
+    else
+    {
+        @part
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public string? Query { get; set; }
+
+    private IEnumerable<(string Part, bool Hit)> parts
+    {
+        get
+        {
+            var query = Query?.Trim() ?? "";
+            if (query.Length == 0)
+            {
+                yield return (Text, false);
+                yield break;
+            }
+            var pos = 0;
+            while (Text.IndexOf(query, pos, StringComparison.CurrentCultureIgnoreCase) is var hit and >= 0)
+            {
+                if (hit > pos)
+                    yield return (Text[pos..hit], false);
+                yield return (Text.Substring(hit, query.Length), true);
+                pos = hit + query.Length;
+            }
+            if (pos < Text.Length)
+                yield return (Text[pos..], false);
+        }
+    }
+}

@@ -1,0 +1,55 @@
+<div class="dropdown @Class" @onkeydown="onKey">
+    <div class="@TriggerClass @(Disabled ? "opacity-50 pe-none" : null)" style="@TriggerStyle" title="@Title" role="combobox" tabindex="@(Disabled ? -1 : 0)"
+         aria-haspopup="listbox" aria-expanded="@(open ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)" aria-label="@Label"
+         @onclick="toggle" @onkeydown="onTriggerKey">
+        @Trigger
+    </div>
+    @if (open)
+    {
+        <div class="position-fixed top-0 start-0 bottom-0 end-0 z-1" @onclick="Close"></div>
+        <div class="dropdown-menu show mt-1 @MenuClass" role="listbox" aria-label="@Label" aria-multiselectable="@(Multiple ? "true" : null)">
+            <CascadingValue Value="this" IsFixed="true">
+                @ChildContent
+            </CascadingValue>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Trigger { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string TriggerClass { get; set; } = "form-select d-flex align-items-center gap-2 text-start";
+    [Parameter] public string? TriggerStyle { get; set; }
+    [Parameter] public string? MenuClass { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Multiple { get; set; }
+
+    private bool open;
+
+    public void Close()
+    {
+        open = false;
+        StateHasChanged();
+    }
+
+    private void toggle()
+    {
+        if (!Disabled)
+            open = !open;
+    }
+
+    private void onTriggerKey(KeyboardEventArgs e)
+    {
+        if (!Disabled && e.Key is "Enter" or " " or "ArrowDown")
+            open = true;
+    }
+
+    private void onKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            open = false;
+    }
+}

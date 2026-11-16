@@ -1,16 +1,14 @@
 @page "/parameters"
 @attribute [Authorize]
-@inject IStringLocalizer<WorkspacesText> L
-@inject IStringLocalizer<DomainText> D
 @inject WorkspaceService Workspaces
 @inject ConfigService Config
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
 
-<PageTitle>@L["Params_Title"] · Pisco</PageTitle>
+<PageTitle>Parameters · Pisco</PageTitle>
 
 <div class="page-head">
-    <h1>@L["Params_Title"]</h1>
+    <h1>Parameters</h1>
 </div>
 
 <div class="row g-4 align-items-start">
@@ -38,7 +36,7 @@
         catch (DomainException ex)
         {
             workspaces = [];
-            Toasts.Error(D[ex.Message, ex.Args]);
+            Toasts.Error(ex.Message);
         }
     }
 }

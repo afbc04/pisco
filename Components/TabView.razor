@@ -17,7 +17,7 @@
             </button>
         }
         <button type="button" class="tab-rail-toggle" title="@(collapsed ? ExpandLabel : CollapseLabel)" aria-label="@(collapsed ? ExpandLabel : CollapseLabel)"
-                aria-expanded="@(!collapsed)" @onclick="() => collapsed = !collapsed">
+                aria-expanded="@(!collapsed)" @onclick="toggleCollapsed">
             <i class="bi bi-chevron-double-@(collapsed ? "right" : "left")"></i>
         </button>
     </nav>
@@ -87,4 +87,6 @@
         selected = tab;
         await ActiveTabChanged.InvokeAsync(tab.Key);
     }
+
+    private void toggleCollapsed() => collapsed = !collapsed;
 }

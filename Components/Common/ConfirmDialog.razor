@@ -1,0 +1,39 @@
+<div class="modal-backdrop show" @onclick="OnCancel"></div>
+<div class="modal d-block" tabindex="-1" @onclick="OnCancel">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message"
+         @onclick:stopPropagation="true" @onkeydown="onKeyDown">
+        <div class="modal-content p-3">
+            <span class="d-inline-flex align-self-start p-2 mb-2 rounded-circle lh-1 fs-5 bg-danger-subtle text-danger-emphasis"><i class="@($"bi bi-{Icon}")"></i></span>
+            <h5 id="confirm-title" class="modal-title fs-6 fw-bold">@Title</h5>
+            @if (Message is not null)
+            {
+                <p id="confirm-message" class="small text-body-secondary mt-1 mb-0">@Message</p>
+            }
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <button @ref="cancelButton" type="button" class="btn btn-outline-secondary" @onclick="OnCancel">@CancelText</button>
+                <button type="button" class="btn btn-danger" disabled="@Busy" @onclick="OnConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Message { get; set; }
+    [Parameter, EditorRequired] public string ConfirmText { get; set; } = "";
+    [Parameter, EditorRequired] public string CancelText { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = "trash3";
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private ElementReference cancelButton;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await cancelButton.FocusAsync();
+    }
+
+    private Task onKeyDown(KeyboardEventArgs e) => e.Key == "Escape" ? OnCancel.InvokeAsync() : Task.CompletedTask;
+}

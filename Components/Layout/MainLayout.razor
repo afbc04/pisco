@@ -1,5 +1,4 @@
 @inherits LayoutComponentBase
-@inject IStringLocalizer<CommonText> L
 
 <div class="app-shell">
     <input type="checkbox" id="sidebar-drawer" class="sidebar-cb" hidden />
@@ -16,7 +15,7 @@
 <Toaster />
 
 <div id="blazor-error-ui">
-    @L["Error_Unhandled"]
-    <a href="" class="reload">@L["Error_Reload"]</a>
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
     <a class="dismiss"><i class="bi bi-x-lg"></i></a>
 </div>

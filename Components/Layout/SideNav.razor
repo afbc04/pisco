@@ -1,15 +1,13 @@
 @implements IDisposable
-@using System.Globalization
 @using Microsoft.AspNetCore.WebUtilities
 
-@inject IStringLocalizer<LayoutText> R
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthProvider
 @inject WorkspaceState WsState
 @inject IJSRuntime JS
 
 <header class="mobilebar">
-    <label for="sidebar-drawer" class="mobilebar-btn" title="@R["Nav_ToggleSidebar"]"><i class="bi bi-list"></i></label>
+    <label for="sidebar-drawer" class="mobilebar-btn" title="Menu"><i class="bi bi-list"></i></label>
     @brandLogo("mobilebar-logo")
     <span class="mobilebar-brand">
         @brandTitle("mobilebar-title")
@@ -24,8 +22,7 @@
             <span class="brand-row">
                 @brandTitle("sidenav-title")
                 <span class="brand-tools">
-                    <button type="button" class="brand-tool sidenav-theme" onclick="toggleTheme()" title="@R["Nav_Theme"]"><i class="bi bi-moon-stars theme-dark-icon"></i><i class="bi bi-sun theme-light-icon"></i></button>
-                    <a class="brand-tool brand-lang" href="/culture/set?culture=@(isPt ? "en" : "pt")&redirectUri=@returnPath" data-enhance-nav="false" title="@(isPt ? "English" : "Português")"><i class="bi bi-translate"></i><span>@(isPt ? "PT" : "EN")</span></a>
+                    <button type="button" class="brand-tool sidenav-theme" onclick="toggleTheme()" title="Toggle light / dark"><i class="bi bi-moon-stars theme-dark-icon"></i><i class="bi bi-sun theme-light-icon"></i></button>
                 </span>
             </span>
             <span class="brand-row">
@@ -38,9 +35,9 @@
     <nav class="sidenav-main">
         @foreach (var item in menu.Where(i => signedIn || !i.Auth))
         {
-            <a class="sidenav-tab @(isActive(item.Route) ? "is-active" : null)" href="@item.Route" title="@R[item.Label]">
+            <a class="sidenav-tab @(isActive(item.Route) ? "is-active" : null)" href="@item.Route" title="@item.Label">
                 <i class="bi bi-@item.Icon"></i>
-                <span class="sidenav-tab-text">@R[item.Label]</span>
+                <span class="sidenav-tab-text">@item.Label</span>
             </a>
         }
     </nav>
@@ -48,7 +45,7 @@
 
 @if (loginOpen)
 {
-    <LoginModal ReturnUrl="@loginReturnUrl" Failed="loginFailed" OnClose="() => loginOpen = false" />
+    <LoginModal ReturnUrl="@loginReturnUrl" Failed="loginFailed" OnClose="closeLogin" />
 }
 
 @code {
@@ -56,10 +53,10 @@
 
     private static readonly MenuItem[] menu =
     [
-        new("speedometer2", "Nav_Home", AppRoutes.Home, Auth: false),
-        new("coin", "Nav_Finances", AppRoutes.Finances, Auth: false),
-        new("grid-1x2", "Nav_Demo", AppRoutes.Demo, Auth: false),
-        new("gear", "Nav_Parameters", AppRoutes.Parameters),
+        new("speedometer2", "Home", AppRoutes.Home, Auth: false),
+        new("coin", "Finances", AppRoutes.Finances, Auth: false),
+        new("grid-1x2", "Demo", AppRoutes.Demo, Auth: false),
+        new("gear", "Parameters", AppRoutes.Parameters),
     ];
 
     private bool signedIn;
@@ -67,11 +64,10 @@
     private bool loginFailed;
     private string loginReturnUrl = "/";
 
-    private bool isPt => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "pt";
     private string currentPath => "/" + Nav.ToBaseRelativePath(Nav.Uri);
     private string returnPath => Uri.EscapeDataString(currentPath);
     private string? brandState => signedIn ? "is-live" : null;
-    private string brandHint => R[signedIn ? "Session_SignedIn" : "Nav_Login"];
+    private string brandHint => (signedIn ? "Signed in" : "Sign in");
 
     private RenderFragment brandLogo(string imgClass) =>
         @<button type="button" class="brand-logo @brandState" title="@brandHint" @onclick="openLogin">
@@ -134,4 +130,6 @@
         WsState.Changed -= onWsChanged;
         Nav.LocationChanged -= onLocationChanged;
     }
+
+    private void closeLogin() => loginOpen = false;
 }

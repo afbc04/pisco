@@ -1,33 +1,32 @@
-@inject IStringLocalizer<FinanceText> R
 
 <div class="row g-3 mb-4">
 
     <!-- Revenue KPI -->
-    <FinanceKpiCard Label="@R["Fin_Income"]" Icon="bi bi-graph-up-arrow" Color="var(--success)">
+    <FinanceKpiCard Label="Income" Icon="bi bi-graph-up-arrow" Color="var(--success)">
         <Action>@categoriesButton</Action>
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot>@noPrevious</Foot>
     </FinanceKpiCard>
 
     <!--
-    <FinanceKpiCard Label="@R["Fin_Expenses"]" Icon="bi bi-arrow-up-right" Color="var(--danger)">
+    <FinanceKpiCard Label="Expenses" Icon="bi bi-arrow-up-right" Color="var(--danger)">
         <Action>@categoriesButton</Action>
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot>@noPrevious</Foot>
     </FinanceKpiCard>
 
-    <FinanceKpiCard Label="@R["Fin_Kpi_Result"]" Icon="bi bi-plus-slash-minus" Color="var(--primary)">
+    <FinanceKpiCard Label="Result" Icon="bi bi-plus-slash-minus" Color="var(--primary)">
         <Value>@(0m.ToString("N2")) €</Value>
-        <Foot><span>@R["Fin_Kpi_ResultHint"]</span></Foot>
+        <Foot><span>Income − expenses</span></Foot>
     </FinanceKpiCard>
 
-    <FinanceKpiCard Label="@R["Fin_Kpi_BalanceNow"]" Icon="bi bi-safe2" Color="var(--balance)">
+    <FinanceKpiCard Label="Current balance" Icon="bi bi-safe2" Color="var(--balance)">
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot>
-            <span class="delta is-good">@(0m.ToString("N2")) €</span>
-            <span>@R["Fin_Kpi_InPeriod"]</span>
-            <span class="kpi-proj" title="@R["Fin_Kpi_Forecast_Hint"]">
-                <i class="bi bi-graph-up-arrow"></i> @endOfMonth.ToString("d MMM"): <b>@(0m.ToString("N2")) €</b>
+            <span class="badge bg-success-subtle text-success-emphasis tnum">@(0m.ToString("N2")) €</span>
+            <span>in the period</span>
+            <span class="w-100" title="Includes pending payments, card bills and recurring income">
+                <i class="bi bi-graph-up-arrow"></i> @endOfMonth.ToString("d MMM"): <b class="text-body-emphasis tnum">@(0m.ToString("N2")) €</b>
             </span>
         </Foot>
     </FinanceKpiCard>
@@ -45,10 +44,10 @@
     }
 
     private RenderFragment categoriesButton =>
-        @<button type="button" class="kpi-action" title="@R["Fin_Categories_Manage"]">
-            <i class="bi bi-tags"></i><span>@R["Fin_Categories"]</span>
+        @<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill ms-auto py-0 small" title="Manage categories">
+            <i class="bi bi-tags"></i><span>Categories</span>
         </button>;
 
     private RenderFragment noPrevious =>
-        @<span><span class="delta is-flat">—</span> @R["Fin_Kpi_NoPrevious"]</span>;
+        @<span><span class="badge bg-body-secondary text-body-secondary">—</span> no data in the previous period</span>;
 }

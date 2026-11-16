@@ -47,7 +47,7 @@ public class WorkspaceService(IDbContextFactory<PiscoDbContext> dbFactory)
     {
         actor.EnsureSignedIn();
         await using var db = await dbFactory.CreateDbContextAsync();
-        var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == id) ?? throw new DomainException("Domain_Workspace_NotFound");
+        var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == id) ?? throw new DomainException("The workspace doesn't exist.");
         if (!isPublic)
             (await configAsync(db)).EnsureCanMakePrivate(ws);
         ws.Rename(name);
@@ -60,7 +60,7 @@ public class WorkspaceService(IDbContextFactory<PiscoDbContext> dbFactory)
         actor.EnsureSignedIn();
         await using var db = await dbFactory.CreateDbContextAsync();
         await using var tx = await db.Database.BeginTransactionAsync();
-        var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == id) ?? throw new DomainException("Domain_Workspace_NotFound");
+        var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == id) ?? throw new DomainException("The workspace doesn't exist.");
         var config = await configAsync(db);
         config.EnsureCanDelete(ws);
         config.Forget(ws);
@@ -72,5 +72,5 @@ public class WorkspaceService(IDbContextFactory<PiscoDbContext> dbFactory)
     }
 
     private static async Task<Config> configAsync(PiscoDbContext db) =>
-        await db.Config.FirstOrDefaultAsync() ?? throw new DomainException("Domain_Config_Missing");
+        await db.Config.FirstOrDefaultAsync() ?? throw new DomainException("The configuration is missing.");
 }

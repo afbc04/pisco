@@ -10,6 +10,6 @@ public static class ClaimsPrincipalExtensions
     public static void EnsureSignedIn(this ClaimsPrincipal user)
     {
         if (!user.IsSignedIn())
-            throw new DomainException("Domain_SignInRequired");
+            throw new DomainException("You need to sign in.");
     }
 }

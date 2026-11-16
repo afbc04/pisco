@@ -32,16 +32,16 @@ public class Config
     {
         username = (username ?? "").Trim();
         if (username.Length == 0)
-            throw new DomainException("Domain_Name_Empty");
+            throw new DomainException("The name can't be empty", DomainField.Name);
         if (username.Length > UsernameLengthMax)
-            throw new DomainException("Domain_Name_TooLong", UsernameLengthMax);
+            throw new DomainException($"The name is too long (max {UsernameLengthMax})", DomainField.Name);
         Username = username;
     }
 
     public void SetPassword(string password)
     {
         if (string.IsNullOrEmpty(password) || password.Length < PasswordLengthMin)
-            throw new DomainException("Domain_Config_PasswordTooShort", PasswordLengthMin);
+            throw new DomainException($"The password must have at least {PasswordLengthMin} characters.");
         PasswordSalt = RandomNumberGenerator.GetBytes(saltSize);
         PasswordHash = hash(password, PasswordSalt);
     }
@@ -56,7 +56,7 @@ public class Config
     public void SetLanding(Workspace ws)
     {
         if (!ws.IsPublic)
-            throw new DomainException("Domain_Config_LandingMustBePublic");
+            throw new DomainException("The home workspace must be public.");
         LandingWorkspaceId = ws.Id;
     }
 
@@ -65,13 +65,13 @@ public class Config
     public void EnsureCanMakePrivate(Workspace ws)
     {
         if (IsLanding(ws))
-            throw new DomainException("Domain_Config_LandingMustBePublic");
+            throw new DomainException("The home workspace must be public.");
     }
 
     public void EnsureCanDelete(Workspace ws)
     {
         if (IsLanding(ws))
-            throw new DomainException("Domain_Workspace_LandingDelete");
+            throw new DomainException("The home workspace cannot be deleted: it is what visitors see.");
     }
 
     public void Forget(Workspace ws)

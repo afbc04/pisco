@@ -1,6 +1,3 @@
-@inject IStringLocalizer<WorkspacesText> L
-@inject IStringLocalizer<CommonText> C
-@inject IStringLocalizer<DomainText> D
 @inject ConfigService ConfigSvc
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
@@ -8,28 +5,28 @@
 <section class="panel-card">
     <header class="panel-card-head">
         <div>
-            <h2 class="panel-card-title"><i class="bi bi-sliders"></i> @L["Params_Config"]</h2>
-            <p class="panel-card-hint">@L["Params_Config_Hint"]</p>
+            <h2 class="panel-card-title"><i class="bi bi-sliders"></i> Configuration</h2>
+            <p class="panel-card-hint">General settings, stored in pisco_config.config.</p>
         </div>
     </header>
 
     <div class="panel-card-body">
         @if (Config is null || publicWorkspaces is null)
         {
-            <p class="text-muted m-0">@C["Common_Loading"]</p>
+            <p class="text-muted m-0">Loading…</p>
         }
         else
         {
             <div class="panel-field">
-                <label class="form-label" for="config-username"><i class="bi bi-person-circle"></i> @L["Config_Username"]</label>
+                <label class="form-label" for="config-username"><i class="bi bi-person-circle"></i> Username</label>
                 <input id="config-username" class="form-control form-control-sm" value="@Config.Username" disabled />
-                <div class="form-text">@L["Config_Username_Hint"]</div>
+                <div class="form-text">The only account; it can be changed in the config table.</div>
             </div>
             <div class="panel-field">
-                <label class="form-label" for="config-landing"><i class="bi bi-house"></i> @L["Config_Landing"]</label>
+                <label class="form-label" for="config-landing"><i class="bi bi-house"></i> Home workspace</label>
                 @if (publicWorkspaces.Count == 0)
                 {
-                    <input id="config-landing" class="form-control form-control-sm" value="@L["Config_Landing_None"]" disabled />
+                    <input id="config-landing" class="form-control form-control-sm" value="No public workspace" disabled />
                 }
                 else
                 {
@@ -41,7 +38,7 @@
                         }
                     </select>
                 }
-                <div class="form-text">@L["Config_Landing_Hint"]</div>
+                <div class="form-text">Where visitors land. It must be public.</div>
             </div>
         }
     </div>
@@ -64,11 +61,11 @@
         try
         {
             await ConfigSvc.SetLandingAsync(id, (await AuthProvider.GetAuthenticationStateAsync()).User);
-            Toasts.Success(L["Config_Saved"]);
+            Toasts.Success("Configuration saved.");
         }
         catch (DomainException ex)
         {
-            Toasts.Error(D[ex.Message, ex.Args]);
+            Toasts.Error(ex.Message);
         }
         finally
         {

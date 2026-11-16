@@ -37,7 +37,7 @@ public class ConfigService(IDbContextFactory<PiscoDbContext> dbFactory)
         actor.EnsureSignedIn();
         return updateAsync(async (db, config) =>
         {
-            var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId) ?? throw new DomainException("Domain_Workspace_NotFound");
+            var ws = await db.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId) ?? throw new DomainException("The workspace doesn't exist.");
             config.SetLanding(ws);
         });
     }
@@ -52,7 +52,7 @@ public class ConfigService(IDbContextFactory<PiscoDbContext> dbFactory)
     private async Task updateAsync(Func<PiscoDbContext, Config, Task> change)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
-        var config = await db.Config.FirstOrDefaultAsync() ?? throw new DomainException("Domain_Config_Missing");
+        var config = await db.Config.FirstOrDefaultAsync() ?? throw new DomainException("The configuration is missing.");
         await change(db, config);
         await db.SaveChangesAsync();
     }

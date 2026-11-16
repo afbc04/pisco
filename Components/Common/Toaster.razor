@@ -1,6 +1,5 @@
 @implements IDisposable
 @inject ToastService ToastService
-@inject IStringLocalizer<CommonText> R
 
 <div class="toaster" role="status" aria-live="polite">
     @if (current is { } entry)
@@ -8,10 +7,10 @@
         <div class="toast-item @style(entry.Toast.Kind)" @key="entry">
             <i class="bi @icon(entry.Toast.Kind)"></i>
             <div class="toast-body">
-                <div class="toast-title">@(entry.Toast.Title ?? R[$"Toast_{entry.Toast.Kind}"])</div>
+                <div class="toast-title">@(entry.Toast.Title ?? entry.Toast.Kind.ToString())</div>
                 <div class="toast-text">@entry.Toast.Message</div>
             </div>
-            <button type="button" class="toast-close" title="@R["Common_Close"]" @onclick="() => current = null"><i class="bi bi-x-lg"></i></button>
+            <button type="button" class="toast-close" title="Close" @onclick="dismiss"><i class="bi bi-x-lg"></i></button>
         </div>
     }
 </div>
@@ -58,4 +57,6 @@
     };
 
     public void Dispose() => ToastService.Shown -= show;
+
+    private void dismiss() => current = null;
 }

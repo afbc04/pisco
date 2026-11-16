@@ -1,0 +1,37 @@
+@if (Checkbox)
+{
+    <label class="dropdown-item d-flex align-items-center gap-2 @Class" role="option" aria-selected="@(Selected ? "true" : "false")" @attributes="Attributes">
+        <input type="checkbox" class="form-check-input m-0" checked="@Selected" @onchange="click" />
+        @ChildContent
+    </label>
+}
+else
+{
+    <button type="button" class="dropdown-item d-flex align-items-center gap-2 @(Selected ? "active" : null) @Class" role="option" aria-selected="@(Selected ? "true" : "false")"
+            @attributes="Attributes" @onclick="click">
+        @ChildContent
+        @if (Selected && ShowCheck)
+        {
+            <i class="bi bi-check-lg ms-auto"></i>
+        }
+    </button>
+}
+
+@code {
+    [CascadingParameter] public Dropdown? Parent { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Checkbox { get; set; }
+    [Parameter] public bool ShowCheck { get; set; } = true;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Attributes { get; set; }
+
+    private async Task click()
+    {
+        await OnClick.InvokeAsync();
+        if (!Checkbox)
+            Parent?.Close();
+    }
+}

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Localization;
 using Pisco.Services;
 
 namespace Pisco.Components.Layout;
@@ -7,7 +6,6 @@ namespace Pisco.Components.Layout;
 public abstract class PresenceAware : ComponentBase, IDisposable
 {
     [Inject] protected AdminPresence Presence { get; set; } = default!;
-    [Inject] protected IStringLocalizer<LayoutText> R { get; set; } = default!;
     [Inject] private ConfigService Config { get; set; } = default!;
 
     [Parameter] public bool SignedIn { get; set; }
@@ -21,25 +19,25 @@ public abstract class PresenceAware : ComponentBase, IDisposable
     protected string? DotState => SignedIn ? "is-soft" : Presence.IsOnline ? null : "is-off";
 
     protected string StatusText =>
-        SignedIn ? R["Presence_Online"]
-        : Presence.IsOnline ? R["Presence_OnlineNow"]
-        : agoText() is { } ago ? R["Presence_LastSeen", ago]
-        : R["Presence_Offline"];
+        SignedIn ? "online"
+        : Presence.IsOnline ? "online now"
+        : agoText() is { } ago ? $"seen {ago} ago"
+        : "offline";
 
     protected string ShortText =>
-        SignedIn || Presence.IsOnline ? R["Presence_Online"]
-        : agoText() is { } ago ? R["Presence_Ago", ago]
-        : R["Presence_Offline"];
+        SignedIn || Presence.IsOnline ? "online"
+        : agoText() is { } ago ? $"{ago} ago"
+        : "offline";
 
     private string? agoText()
     {
         if (Presence.LastSeen is not { } seen)
             return null;
         var ago = DateTimeOffset.UtcNow - seen;
-        return ago.TotalMinutes < 1 ? R["Presence_JustNow"]
-            : ago.TotalHours < 1 ? R["Presence_Minutes", (int)ago.TotalMinutes]
-            : ago.TotalDays < 1 ? R["Presence_Hours", (int)ago.TotalHours]
-            : R["Presence_Days", (int)ago.TotalDays];
+        return ago.TotalMinutes < 1 ? "moments"
+            : ago.TotalHours < 1 ? $"{((int)ago.TotalMinutes)} min"
+            : ago.TotalDays < 1 ? $"{((int)ago.TotalHours)} h"
+            : $"{((int)ago.TotalDays)} d";
     }
 
     protected override async Task OnInitializedAsync()

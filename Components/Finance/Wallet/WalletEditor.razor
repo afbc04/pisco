@@ -1,0 +1,339 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject WalletManager Wallets
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="@(isNewEntry ? "New wallet" : "Edit wallet")" Small="true" Class="has-popovers wallet-editor" OnClose="OnClose">
+    <ChildContent>
+        <div class="row g-0 flex-grow-1">
+            <div class="col-md p-4">
+                <fieldset disabled="@locked">
+                    <div class="row mb-3">
+
+                        <label for="wallet-name" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                            Name
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="d-flex gap-2">
+                                <Dropdown TriggerClass="icon-tile h-100" TriggerStyle="@($"--tile: {form.Color}; --tile-size: 2.375rem")" MenuClass="d-grid gap-1 p-2 icon-grid"
+                                          Title="Icon" Label="Icon" Disabled="@locked">
+                                    <Trigger><i class="@($"bi bi-{form.Icon}")"></i></Trigger>
+                                    <ChildContent>
+                                        @foreach (var option in Icons)
+                                        {
+                                            <DropdownItem Class="justify-content-center px-0 py-1 rounded" Selected="@(form.Icon == option)" ShowCheck="false"
+                                                          title="@option" aria-label="@option" OnClick="() => pickIcon(option)">
+                                                <i class="@($"bi bi-{option}")"></i>
+                                            </DropdownItem>
+                                        }
+                                    </ChildContent>
+                                </Dropdown>
+                                <input id="wallet-name" class="form-control @(validator.NameError is null ? null : "is-invalid")" maxlength="@Wallet.NameLengthMax"
+                                       @bind="form.Name" @bind:event="oninput" @bind:after="validator.ClearName" autofocus />
+                            </div>
+                            @if (validator.NameError is not null)
+                            {
+                                <div class="invalid-feedback d-block">@validator.NameError</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <span class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                            Colour
+                        </span>
+                        <Dropdown Class="col-sm-9" Label="Colour" Disabled="@locked">
+                            <Trigger>
+                                <span class="dot" style="@($"--tile: {form.Color}")"></span>
+                                @colorName(form.Color)
+                            </Trigger>
+                            <ChildContent>
+                                @foreach (var option in Palette)
+                                {
+                                    <DropdownItem Selected="@(form.Color == option.Hex)" OnClick="() => pickColor(option.Hex)">
+                                        <span class="dot" style="@($"--tile: {option.Hex}")"></span>
+                                        @option.Name
+                                    </DropdownItem>
+                                }
+                            </ChildContent>
+                        </Dropdown>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="wallet-balance" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary" title="The balance before the first movement.">
+                            Initial balance
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <input id="wallet-balance" type="number" class="form-control tnum" placeholder="0.00" @bind="form.Amount" />
+                                <span class="input-group-text">€</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label for="wallet-active" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary" title="An inactive wallet keeps its history but does not count towards the total.">
+                            Active
+                        </label>
+                        <div class="col-sm-9 d-flex align-items-center">
+                            <input id="wallet-active" type="checkbox" class="form-check-input m-0" @bind="form.Active" />
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <aside class="col-md-3 wallet-side d-flex flex-column gap-3 p-4 border-top small text-body-emphasis tnum">
+                @if (current is { } w)
+                {
+                    <span class="d-inline-flex flex-wrap align-items-center gap-2 fw-semibold">
+                        <span class="dot text-@(StatusColor(w.Status))-emphasis"></span>
+                        @w.Status
+                    </span>
+                    <div>
+                        <div class="text-body-secondary">Created</div>
+                        @w.CreationDate.ToString("d MMM yyyy")
+                    </div>
+                    <div>
+                        <div class="text-body-secondary">Last updated</div>
+                        @w.UpdatedDate.ToLocalTime().ToString("d MMM yyyy, HH:mm")
+                    </div>
+                    @if (w.InactiveDate is { } inactive)
+                    {
+                        <div>
+                            <div class="text-body-secondary">Inactive since</div>
+                            @inactive.ToString("d MMM yyyy")
+                        </div>
+                    }
+                    @if (w.DeletedDate is { } deleted)
+                    {
+                        <div>
+                            <div class="text-body-secondary">Deleted on</div>
+                            @deleted.ToString("d MMM yyyy")
+                        </div>
+                    }
+
+                    <div class="mt-auto d-flex flex-column align-items-start gap-1">
+                        @if (w.IsDeleted)
+                        {
+                            <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" title="Brings the wallet back as published." disabled="@busy" @onclick="restore">
+                                <i class="bi bi-arrow-counterclockwise"></i> 
+                                Restore
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-danger-emphasis text-start" title="Removes the wallet forever. This cannot be undone." disabled="@busy" @onclick="askPurge">
+                                <i class="bi bi-x-octagon"></i> 
+                                Delete permanently
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" title="@(w.IsDraft ? "Drafts don't count towards totals. Publishing makes this wallet a regular one." : "The wallet stops counting towards totals until it is published again.")"
+                                    disabled="@busy" @onclick="() => setDraft(!w.IsDraft)">
+                                <i class="bi bi-@(w.IsDraft ? "send" : "pencil")"></i> 
+                                @(w.IsDraft ? "Publish" : "Move to draft")
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-danger-emphasis" title="It goes to the deleted wallets and can be restored later." disabled="@busy" @onclick="askDelete">
+                                <i class="bi bi-trash3"></i> 
+                                Delete
+                            </button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <span class="d-inline-flex align-items-center gap-2 fw-semibold"><span class="dot text-body-secondary"></span>New</span>
+                }
+            </aside>
+        </div>
+    </ChildContent>
+    <Footer>
+        @if (current is not { IsDeleted: true })
+        {
+            <button type="button" class="btn btn-primary" disabled="@busy" @onclick="() => SaveEntry(false)">@(isNewEntry ? "Create" : "Save")</button>
+            @if (isNewEntry)
+            {
+                <button type="button" class="btn btn-outline-secondary" disabled="@busy" @onclick="() => SaveEntry(true)">Save as draft</button>
+            }
+        }
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">@(isNewEntry ? "Cancel" : "Close")</button>
+    </Footer>
+</EntryModal>
+
+@if (confirm == WalletFormConfirm.DeleteConfirmationBox)
+{
+    <ConfirmDialog Title="@($"Delete the wallet “{current!.Name}”?")" Message="It stops showing in the list and in the totals. You can restore it later."
+                   ConfirmText="Delete" CancelText="Cancel" Busy="busy"
+                   OnConfirm="DeleteEntry" OnCancel="cancelConfirm" />
+}
+else if (confirm == WalletFormConfirm.PurgeConfirmationBox)
+{
+    <ConfirmDialog Title="@($"Permanently delete “{current!.Name}”?")" Message="This cannot be undone."
+                   ConfirmText="Delete permanently" CancelText="Cancel" Busy="busy"
+                   OnConfirm="PurgeEntry" OnCancel="cancelConfirm" />
+}
+
+@code {
+    [Parameter] public Wallet? Wallet { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnSaved { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private enum WalletFormConfirm { DeleteConfirmationBox, PurgeConfirmationBox }
+
+    public sealed record WalletFormPaletteOptions(string Hex, string Name);
+
+    public static readonly WalletFormPaletteOptions[] Palette =
+    [
+        new("#89b4fa", "Blue"), new("#b4befe", "Lavender"), new("#cba6f7", "Purple"), new("#f5c2e7", "Pink"), new("#f38ba8", "Red"),
+        new("#fab387", "Orange"), new("#f9e2af", "Yellow"), new("#a6e3a1", "Green"), new("#94e2d5", "Teal"), new("#89dceb", "Sky blue"),
+    ];
+
+    public static readonly string[] Icons =
+    [
+        "credit-card-2-front-fill", "credit-card-fill", "wallet-fill", "bank", "bank2", "piggy-bank-fill",
+        "cash-coin", "cash-stack", "coin", "safe2-fill", "graph-up-arrow", "currency-bitcoin",
+        "paypal", "briefcase-fill", "building-fill", "house-fill", "car-front-fill", "airplane-fill",
+        "cart-fill", "bag-fill", "gift-fill", "heart-fill", "mortarboard-fill", "controller",
+    ];
+
+    public static string StatusColor(WalletStatus status) => status switch
+    {
+        WalletStatus.Draft => "secondary",
+        WalletStatus.Published => "success",
+        _ => "danger",
+    };
+
+    private sealed class WalletForm
+    {
+        public string Name { get; set; } = "";
+        public string Color { get; set; } = Palette[0].Hex;
+        public string Icon { get; set; } = Icons[0];
+        public decimal Amount { get; set; }
+        public bool Active { get; set; } = true;
+
+        public long Cents => (long)Math.Round(Amount * 100, MidpointRounding.AwayFromZero);
+
+        public static WalletForm From(Wallet wallet) => new()
+        {
+            Name = wallet.Name,
+            Color = wallet.Color,
+            Icon = wallet.Icon,
+            Amount = wallet.InitialBalance / 100m,
+            Active = wallet.Active,
+        };
+    }
+
+    private sealed class WalletFormValidator
+    {
+        public string? NameError { get; private set; }
+
+        public bool Handle(DomainException ex)
+        {
+            if (ex.Field != DomainField.Name)
+                return false;
+            NameError = ex.Message;
+            return true;
+        }
+
+        public void ClearName() => NameError = null;
+    }
+
+    private bool isNewEntry => Wallet is null;
+
+    private ClaimsPrincipal actor = new();
+    private Wallet? current;
+    private WalletForm form = new();
+    private readonly WalletFormValidator validator = new();
+    private bool busy;
+    private WalletFormConfirm? confirm;
+
+    private long workspace => WsState.Current!.Id;
+
+    private bool locked => current?.IsDeleted == true;
+
+    private static string colorName(string hex) =>
+        Palette.FirstOrDefault(c => c.Hex == hex) is { } match ? match.Name : hex;
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        current = Wallet;
+        if (current is { } w)
+            form = WalletForm.From(w);
+    }
+
+    private Task SaveEntry(bool draft) => close(() =>
+    {
+        if (isNewEntry)
+        {
+            var created = Wallets.Create(workspace, form.Name, form.Color, form.Icon, form.Cents, form.Active, draft, actor);
+            return draft ? $"Draft {created.Name} saved." : $"Wallet {created.Name} created.";
+        }
+        Wallets.Update(workspace, current!.ID, form.Name, form.Color, form.Icon, form.Cents, form.Active, actor);
+        return "Wallet saved.";
+    });
+
+    private Task DeleteEntry() => close(() =>
+    {
+        Wallets.Delete(workspace, current!.ID, actor);
+        return $"Wallet {current.Name} deleted.";
+    });
+
+    private Task PurgeEntry() => close(() =>
+    {
+        Wallets.Purge(workspace, current!.ID, actor);
+        return $"Wallet “{current.Name}” permanently deleted.";
+    });
+
+    private Task setDraft(bool draft) => stay(() =>
+    {
+        Wallets.SetDraft(workspace, current!.ID, draft, actor);
+        return draft ? $"Wallet {current.Name} moved to draft." : $"Wallet {current.Name} published.";
+    });
+
+    private Task restore() => stay(() =>
+    {
+        Wallets.Restore(workspace, current!.ID, actor);
+        return $"Wallet “{current.Name}” restored.";
+    });
+
+    private Task close(Func<string> action) => run(async () => await OnSaved.InvokeAsync(action()));
+
+    private Task stay(Func<string> action) => run(async () =>
+    {
+        var message = action();
+        current = Wallets.Get(workspace, current!.ID, actor);
+        Toasts.Success(message);
+        await OnChanged.InvokeAsync();
+    });
+
+    private async Task run(Func<Task> action)
+    {
+        busy = true;
+        try
+        {
+            await action();
+        }
+        catch (DomainException ex)
+        {
+            if (locked || !validator.Handle(ex))
+                Toasts.Error(ex.Message);
+        }
+        finally
+        {
+            busy = false;
+            confirm = null;
+        }
+    }
+
+    private void pickIcon(string option) => form.Icon = option;
+
+    private void pickColor(string hex) => form.Color = hex;
+
+    private void askDelete() => confirm = WalletFormConfirm.DeleteConfirmationBox;
+
+    private void askPurge() => confirm = WalletFormConfirm.PurgeConfirmationBox;
+
+    private void cancelConfirm() => confirm = null;
+}

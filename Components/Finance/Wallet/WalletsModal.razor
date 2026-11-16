@@ -1,0 +1,320 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject WalletManager Wallets
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="Manage wallets" Class="wallets-modal" OnClose="OnClose">
+    <ChildContent>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <div class="filter filter-search">
+                <i class="bi bi-search"></i>
+                <input type="search" class="form-control" placeholder="Search by name" aria-label="Search by name"
+                       value="@search" @oninput="onSearch" />
+            </div>
+            <Dropdown Class="flex-grow-1" TriggerClass="form-select form-select-sm d-flex flex-wrap align-items-center gap-1" Label="Status" Multiple="true">
+                <Trigger>
+                    @if (shown.Count == 0)
+                    {
+                        <span class="text-body-secondary">Status</span>
+                    }
+                    @foreach (var status in statuses.Where(shown.Contains))
+                    {
+                        <span class="@WalletMoney.Badge(status) d-inline-flex align-items-center gap-1">
+                            @statusPlural(status)
+                            <button type="button" class="btn p-0 border-0 lh-1 text-reset" title="@($"Remove filter: {(statusPlural(status))}")"
+                                    aria-label="@($"Remove filter: {(statusPlural(status))}")"
+                                    @onclick="() => toggle(status)" @onclick:stopPropagation="true">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </span>
+                    }
+                </Trigger>
+                <ChildContent>
+                    <DropdownItem Checkbox="true" Class="fw-semibold" Selected="@(shown.Count == statuses.Length)" OnClick="toggleAll">All</DropdownItem>
+                    <hr class="dropdown-divider" />
+                    @foreach (var status in statuses)
+                    {
+                        <DropdownItem Checkbox="true" Selected="@shown.Contains(status)" OnClick="() => toggle(status)">
+                            <span class="dot text-@(WalletEditor.StatusColor(status))-emphasis"></span>
+                            @statusPlural(status)
+                        </DropdownItem>
+                    }
+                </ChildContent>
+            </Dropdown>
+            <button type="button" class="btn btn-primary btn-sm ms-auto" @onclick="() => openEditor(null)">
+                <i class="bi bi-plus-lg"></i> New wallet
+            </button>
+        </div>
+
+        <div class="wallets-table flex-grow-1 d-flex flex-column border rounded-3 overflow-hidden">
+            @if (all is null)
+            {
+                <p class="text-body-secondary text-center my-4">Loading…</p>
+            }
+            else if (filtered.Count == 0)
+            {
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center gap-2 py-5 px-3 text-body-secondary text-center">
+                    <i class="bi bi-@(all.Count == 0 ? "wallet2" : "funnel") fs-4"></i>
+                    <span>@(all.Count == 0 ? "No wallets yet." : shown.Count == 0 ? "No status selected" : "No wallets match the filters.")</span>
+                    @if (all.Count > 0)
+                    {
+                        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="clearFilters">Clear filters</button>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="flex-grow-1 overflow-auto">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="text-uppercase text-body-secondary">
+                            <tr>
+                                @header("Wallet", WalletSort.Name, "ps-3")
+                                @header("Status", WalletSort.Status, null)
+                                @header("Active", WalletSort.Active, null)
+                                @header("Initial balance", WalletSort.Balance, "text-end")
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var wallet in pageRows)
+                            {
+                                <tr role="button" @onclick="() => openEditor(wallet)">
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="icon-tile @(wallet.IsDeleted ? "opacity-50" : null)" style="@($"--tile: {wallet.Color}")" aria-hidden="true"><i class="@($"bi bi-{wallet.Icon}")"></i></span>
+                                            <div class="d-flex flex-column lh-sm overflow-hidden">
+                                                <span class="fw-semibold text-truncate @(wallet.IsDeleted ? "text-body-secondary text-decoration-line-through" : "text-body-emphasis")"><Highlight Text="@wallet.Name" Query="@search" /></span>
+                                                <span class="text-body-secondary">
+                                                    @($"created {(day(wallet.CreationDate))}")
+                                                    <span aria-hidden="true">·</span>
+                                                    @(wallet.IsDeleted ? $"deleted {(day(wallet.DeletedDate))}" : $"updated {(wallet.UpdatedDate.ToLocalTime().ToString("d MMM yyyy"))}")
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <span class="@WalletMoney.Badge(wallet.Status)">@statusName(wallet.Status)</span>
+                                    </td>
+                                    <td title="@(wallet.IsDeleted ? null : wallet.Active ? "In use" : $"Inactive since {day(wallet.InactiveDate)}")">
+                                        @if (!wallet.IsDeleted)
+                                        {
+                                            <input type="checkbox" class="form-check-input m-0 pe-none" tabindex="-1" aria-readonly="true"
+                                                   aria-label="@($"Active: {wallet.Name}")" checked="@wallet.Active" />
+                                        }
+                                    </td>
+                                    <td class="pe-3 text-end fw-semibold text-body-emphasis tnum @(wallet.IsDeleted ? "opacity-50" : null)">@WalletMoney.Format(wallet.InitialBalance)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 px-3 py-2 border-top small text-body-secondary">
+                    <select class="form-select form-select-sm w-auto me-auto" title="Rows per page" aria-label="Rows per page" value="@pageSize" @onchange="onPageSize">
+                        @foreach (var size in pageSizes)
+                        {
+                            <option value="@size">@($"{size} / page")</option>
+                        }
+                    </select>
+                    <span class="tnum">@($"{(currentPage * pageSize + 1)}–{(Math.Min((currentPage + 1) * pageSize, filtered.Count))} of {filtered.Count}")</span>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary" title="Previous page" aria-label="Previous page"
+                                disabled="@(currentPage == 0)" @onclick="previousPage">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" title="Next page" aria-label="Next page"
+                                disabled="@(currentPage >= pageCount - 1)" @onclick="nextPage">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">Close</button>
+    </Footer>
+</EntryModal>
+
+@if (editorOpen)
+{
+    <WalletEditor Wallet="editing" OnClose="closeEditor" OnSaved="saved" OnChanged="changed" />
+}
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static readonly WalletStatus[] statuses = [WalletStatus.Published, WalletStatus.Draft, WalletStatus.Deleted];
+    private static readonly WalletStatus[] defaultShown = [WalletStatus.Published, WalletStatus.Draft];
+    private static readonly int[] pageSizes = [10, 25, 50];
+
+    private enum WalletSort { Name, Status, Active, Balance }
+
+    private ClaimsPrincipal actor = new();
+    private List<Wallet>? all;
+    private readonly HashSet<WalletStatus> shown = [.. defaultShown];
+    private string search = "";
+    private int page;
+    private int pageSize = pageSizes[0];
+    private bool editorOpen;
+    private Wallet? editing;
+    private WalletSort? sortBy;
+    private bool sortDescending;
+
+    private List<Wallet> filtered => ordered(all!
+        .Where(w => shown.Contains(w.Status))
+        .Where(w => search.Length == 0 || w.Name.Contains(search.Trim(), StringComparison.CurrentCultureIgnoreCase)))
+        .ToList();
+
+    private IEnumerable<Wallet> ordered(IEnumerable<Wallet> rows) => sortBy switch
+    {
+        WalletSort.Name => by(rows, w => w.Name, StringComparer.CurrentCultureIgnoreCase),
+        WalletSort.Status => by(rows, w => Array.IndexOf(statuses, w.Status)).ThenBy(w => w.Name, StringComparer.CurrentCultureIgnoreCase),
+        WalletSort.Active => by(rows, w => w.Active).ThenBy(w => w.Name, StringComparer.CurrentCultureIgnoreCase),
+        WalletSort.Balance => by(rows, w => w.InitialBalance).ThenBy(w => w.Name, StringComparer.CurrentCultureIgnoreCase),
+        _ => rows
+            .OrderBy(w => Array.IndexOf(statuses, w.Status))
+            .ThenByDescending(w => w.Active)
+            .ThenBy(w => w.Name, StringComparer.CurrentCultureIgnoreCase),
+    };
+
+    private IOrderedEnumerable<Wallet> by<T>(IEnumerable<Wallet> rows, Func<Wallet, T> key, IComparer<T>? comparer = null) =>
+        sortDescending ? rows.OrderByDescending(key, comparer) : rows.OrderBy(key, comparer);
+
+    private string? ariaSort(WalletSort column) =>
+        sortBy != column ? null : sortDescending ? "descending" : "ascending";
+
+    private string sortIcon(WalletSort column) =>
+        sortBy != column ? "chevron-expand opacity-50" : sortDescending ? "chevron-down" : "chevron-up";
+
+    private RenderFragment header(string label, WalletSort column, string? cellClass) =>
+        @<th class="@cellClass" aria-sort="@ariaSort(column)">
+            <button type="button" class="border-0 bg-transparent p-0 text-reset text-uppercase fw-bold d-inline-flex align-items-center gap-1"
+                    title="@($"Sort by {label.ToLowerInvariant()}")" @onclick="() => sort(column)">
+                @label
+                <i class="bi bi-@sortIcon(column)"></i>
+            </button>
+        </th>;
+
+    private int pageCount => Math.Max(1, (filtered.Count + pageSize - 1) / pageSize);
+
+    private int currentPage => Math.Clamp(page, 0, pageCount - 1);
+
+    private IEnumerable<Wallet> pageRows => filtered.Skip(currentPage * pageSize).Take(pageSize);
+
+    private string statusName(WalletStatus status) => status switch
+    {
+        WalletStatus.Draft => "Draft",
+        WalletStatus.Published => "Published",
+        _ => "Deleted",
+    };
+
+    private string statusPlural(WalletStatus status) => status switch
+    {
+        WalletStatus.Draft => "Drafts",
+        WalletStatus.Published => "Published",
+        _ => "Deleted",
+    };
+
+    private static string day(DateOnly? date) => date?.ToString("d MMM yyyy") ?? "—";
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        load();
+    }
+
+    private void load()
+    {
+        var ws = WsState.Current!.Id;
+        try
+        {
+            all = [.. Wallets.List(ws, actor), .. Wallets.ListDeleted(ws, actor)];
+        }
+        catch (DomainException ex)
+        {
+            all = [];
+            Toasts.Error(ex.Message);
+        }
+    }
+
+    private void onSearch(ChangeEventArgs e)
+    {
+        search = e.Value?.ToString() ?? "";
+        page = 0;
+    }
+
+    private void onPageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var size) && pageSizes.Contains(size))
+        {
+            pageSize = size;
+            page = 0;
+        }
+    }
+
+    private void toggle(WalletStatus status)
+    {
+        if (!shown.Remove(status))
+            shown.Add(status);
+        page = 0;
+    }
+
+    private void toggleAll()
+    {
+        if (shown.Count == statuses.Length)
+            shown.Clear();
+        else
+            shown.UnionWith(statuses);
+        page = 0;
+    }
+
+    private void clearFilters()
+    {
+        search = "";
+        shown.Clear();
+        shown.UnionWith(defaultShown);
+        page = 0;
+    }
+
+    private void openEditor(Wallet? wallet)
+    {
+        editing = wallet;
+        editorOpen = true;
+    }
+
+    private async Task saved(string message)
+    {
+        editorOpen = false;
+        load();
+        Toasts.Success(message);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task changed()
+    {
+        load();
+        await OnChanged.InvokeAsync();
+    }
+
+    private void sort(WalletSort column)
+    {
+        if (sortBy != column)
+        {
+            sortBy = column;
+            sortDescending = false;
+        }
+        else if (!sortDescending)
+            sortDescending = true;
+        else
+            sortBy = null;
+        page = 0;
+    }
+
+    private void previousPage() => page = currentPage - 1;
+
+    private void nextPage() => page = currentPage + 1;
+
+    private void closeEditor() => editorOpen = false;
+}

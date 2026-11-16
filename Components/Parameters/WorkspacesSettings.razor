@@ -1,22 +1,20 @@
-@inject IStringLocalizer<WorkspacesText> L
-@inject IStringLocalizer<CommonText> C
 @inject WorkspaceState WsState
 @inject ToastService Toasts
 
 <section class="panel-card">
     <header class="panel-card-head">
         <div>
-            <h2 class="panel-card-title"><i class="bi bi-collection"></i> @L["Params_Workspaces"]</h2>
-            <p class="panel-card-hint">@L["Params_Workspaces_Hint"]</p>
+            <h2 class="panel-card-title"><i class="bi bi-collection"></i> Workspaces</h2>
+            <p class="panel-card-hint">Each workspace keeps its own data.</p>
         </div>
         <button type="button" class="btn btn-primary btn-sm" @onclick="() => openEditor(null)">
-            <i class="bi bi-plus-lg"></i> @L["Ws_New"]
+            <i class="bi bi-plus-lg"></i> New workspace
         </button>
     </header>
 
     @if (Workspaces is null)
     {
-        <p class="panel-card-body text-muted">@C["Common_Loading"]</p>
+        <p class="panel-card-body text-muted">Loading…</p>
     }
     else
     {
@@ -24,16 +22,16 @@
             @foreach (var ws in Workspaces)
             {
                 <li>
-                    <button type="button" class="row-list-item" title="@L["Ws_Edit"]" @onclick="() => openEditor(ws)">
+                    <button type="button" class="row-list-item" title="Edit workspace" @onclick="() => openEditor(ws)">
                         <span class="ws-avatar">@ws.Name[..1].ToUpperInvariant()</span>
                         <span class="row-list-main">@ws.Name</span>
                         @if (ws.Id == LandingId)
                         {
-                            <span class="ws-tag" title="@L["Ws_Landing_Hint"]"><i class="bi bi-house"></i> @L["Ws_Landing"]</span>
+                            <span class="ws-tag" title="Shown to visitors who are not signed in"><i class="bi bi-house"></i> Home</span>
                         }
                         @if (ws.IsPublic)
                         {
-                            <span class="ws-public" title="@L["Ws_Public_Hint"]"><i class="bi bi-globe2"></i> @L["Ws_Public"]</span>
+                            <span class="ws-public" title="Visitors who are not signed in can open it."><i class="bi bi-globe2"></i> Public</span>
                         }
                         <i class="bi bi-chevron-right row-list-chev"></i>
                     </button>
@@ -45,7 +43,7 @@
 
 @if (editorOpen)
 {
-    <WorkspaceEditor Workspace="editing" IsLanding="@(editing is not null && editing.Id == LandingId)" OnClose="() => editorOpen = false" OnSaved="savedAsync" />
+    <WorkspaceEditor Workspace="editing" IsLanding="@(editing is not null && editing.Id == LandingId)" OnClose="closeEditor" OnSaved="savedAsync" />
 }
 
 @code {
@@ -69,4 +67,6 @@
         await WsState.ReloadAsync();
         Toasts.Success(message);
     }
+
+    private void closeEditor() => editorOpen = false;
 }

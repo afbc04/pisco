@@ -1,15 +1,12 @@
 @using System.Security.Claims
-@inject IStringLocalizer<WorkspacesText> L
-@inject IStringLocalizer<CommonText> C
-@inject IStringLocalizer<DomainText> D
 @inject WorkspaceService Workspaces
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
 
-<EntryModal Title="@L[isNew ? "Ws_New" : "Ws_Edit"]" Small="true" OnClose="OnClose">
+<EntryModal Title="@((isNew ? "New workspace" : "Edit workspace"))" Small="true" OnClose="OnClose">
     <ChildContent>
         <section class="ws-section">
-            <label class="ws-section-title" for="ws-name">@C["Common_Name"] <span class="required-mark">*</span></label>
+            <label class="ws-section-title" for="ws-name">Name <span class="required-mark">*</span></label>
             <input id="ws-name" class="form-control @(nameError is null ? null : "is-invalid")" maxlength="@Workspace.NameLengthMax"
                    @bind="name" @bind:event="oninput" @bind:after="() => nameError = null" autofocus />
             @if (nameError is not null)
@@ -21,41 +18,41 @@
         <section class="ws-section">
             <label class="form-check form-switch mb-0">
                 <input type="checkbox" class="form-check-input" role="switch" @bind="isPublic" disabled="@IsLanding" />
-                <span class="form-check-label">@L["Ws_Public"]</span>
+                <span class="form-check-label">Public</span>
             </label>
-            <p class="ws-hint mb-0 mt-1">@(IsLanding ? D["Domain_Config_LandingMustBePublic"] : L["Ws_Public_Hint"])</p>
+            <p class="ws-hint mb-0 mt-1">@(IsLanding ? "The home workspace must be public." : "Visitors who are not signed in can open it.")</p>
         </section>
 
         @if (!isNew)
         {
             <section class="ws-section ws-danger">
-                <div class="ws-section-title">@L["Ws_Delete"]</div>
+                <div class="ws-section-title">Delete workspace</div>
                 @if (IsLanding)
                 {
-                    <p class="ws-hint mb-0">@D["Domain_Workspace_LandingDelete"]</p>
+                    <p class="ws-hint mb-0">The home workspace cannot be deleted: it is what visitors see.</p>
                 }
                 else if (!confirmDelete)
                 {
-                    <p class="ws-hint">@L["Ws_Delete_Hint"]</p>
-                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick='() => { confirmDelete = true; confirmName = ""; }'>
-                        <i class="bi bi-trash3"></i> @L["Ws_Delete"]
+                    <p class="ws-hint">Deletes the workspace and all of its data. This cannot be undone.</p>
+                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="askDelete">
+                        <i class="bi bi-trash3"></i> Delete workspace
                     </button>
                 }
                 else
                 {
-                    <p class="ws-hint">@((MarkupString)L["Ws_Delete_Confirm", System.Net.WebUtility.HtmlEncode(Workspace!.Name)].Value)</p>
+                    <p class="ws-hint">Type <strong>@Workspace!.Name</strong> to confirm.</p>
                     <div class="ws-inline">
-                        <input class="form-control" aria-label="@L["Ws_Delete"]" @bind="confirmName" @bind:event="oninput" autofocus />
-                        <button type="button" class="btn btn-danger" disabled="@(busy || confirmName.Trim() != Workspace.Name)" @onclick="deleteAsync">@C["Common_Delete"]</button>
-                        <button type="button" class="btn btn-outline-secondary" title="@C["Common_Cancel"]" @onclick="() => confirmDelete = false"><i class="bi bi-x-lg"></i></button>
+                        <input class="form-control" aria-label="Delete workspace" @bind="confirmName" @bind:event="oninput" autofocus />
+                        <button type="button" class="btn btn-danger" disabled="@(busy || confirmName.Trim() != Workspace.Name)" @onclick="deleteAsync">Delete</button>
+                        <button type="button" class="btn btn-outline-secondary" title="Cancel" @onclick="cancelDelete"><i class="bi bi-x-lg"></i></button>
                     </div>
                 }
             </section>
         }
     </ChildContent>
     <Footer>
-        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="saveAsync">@(isNew ? L["Ws_Create"] : C["Common_Save"])</button>
-        <button type="button" class="btn btn-outline-secondary" @onclick="OnClose">@C["Common_Cancel"]</button>
+        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="saveAsync">@(isNew ? "Create" : "Save")</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnClose">Cancel</button>
     </Footer>
 </EntryModal>
 
@@ -88,19 +85,19 @@
         if (isNew)
         {
             var ws = await Workspaces.CreateAsync(name, isPublic, actor);
-            await OnSaved.InvokeAsync(L["Ws_Created", ws.Name]);
+            await OnSaved.InvokeAsync($"Workspace \"{ws.Name}\" created.");
         }
         else
         {
             await Workspaces.UpdateAsync(Workspace!.Id, name, isPublic, actor);
-            await OnSaved.InvokeAsync(L["Ws_Saved"]);
+            await OnSaved.InvokeAsync("Workspace saved.");
         }
     });
 
     private Task deleteAsync() => runAsync(async () =>
     {
         await Workspaces.DeleteAsync(Workspace!.Id, actor);
-        await OnSaved.InvokeAsync(L["Ws_Deleted", Workspace.Name]);
+        await OnSaved.InvokeAsync($"Workspace \"{Workspace.Name}\" deleted.");
     });
 
     private async Task runAsync(Func<Task> action)
@@ -110,17 +107,25 @@
         {
             await action();
         }
-        catch (DomainException ex) when (ex.Message.StartsWith("Domain_Name_"))
+        catch (DomainException ex) when (ex.Field == DomainField.Name)
         {
-            nameError = D[ex.Message, ex.Args];
+            nameError = ex.Message;
         }
         catch (DomainException ex)
         {
-            Toasts.Error(D[ex.Message, ex.Args]);
+            Toasts.Error(ex.Message);
         }
         finally
         {
             busy = false;
         }
     }
+
+    private void askDelete()
+    {
+        confirmDelete = true;
+        confirmName = "";
+    }
+
+    private void cancelDelete() => confirmDelete = false;
 }

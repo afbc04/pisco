@@ -1,10 +1,108 @@
-@inject IStringLocalizer<FinanceText> L
+@using System.Security.Claims
+@implements IDisposable
+@inject WalletManager Wallets
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
 
-<section class="panel-card overflow-visible">
+<section class="panel-card">
     <header class="panel-card-head">
-        <p>Work In Progress</p>
+        <div>
+            <h2 class="panel-card-title"><i class="bi bi-wallet2"></i> Wallets</h2>
+            <p class="panel-card-hint">Accounts, cards, savings and cash</p>
+        </div>
+        @if (signedIn && WsState.Current is not null)
+        {
+            <button type="button" class="btn btn-outline-secondary btn-sm" title="Manage wallets" aria-label="Manage wallets" @onclick="openManager">
+                <i class="bi bi-gear"></i>
+            </button>
+        }
     </header>
+
+    @if (wallets is null)
+    {
+        <p class="panel-card-body text-muted">Loading…</p>
+    }
+    else if (wallets.Count == 0)
+    {
+        <p class="panel-card-body text-muted text-center">No active wallets yet.</p>
+    }
+    else
+    {
+        <ul class="row-list is-flush">
+            @foreach (var wallet in ordered)
+            {
+                <li>
+                    @row(wallet)
+                </li>
+            }
+        </ul>
+        <div class="d-flex justify-content-between align-items-center gap-2 px-3 py-2 border-top small text-body-secondary">
+            <span>Total</span>
+            <b class="text-body-emphasis tnum">@WalletMoney.Format(total)</b>
+        </div>
+    }
 </section>
 
+@if (managerOpen)
+{
+    <WalletsModal OnClose="closeManager" OnChanged="load" />
+}
+
 @code {
+    private List<Wallet>? wallets;
+    private bool signedIn;
+    private ClaimsPrincipal actor = new();
+    private bool managerOpen;
+
+    private IEnumerable<Wallet> ordered => wallets!.OrderBy(w => w.Name);
+
+    private long total => wallets!.Sum(w => w.InitialBalance);
+
+    private RenderFragment row(Wallet wallet) =>
+        @<text>
+            <span class="icon-tile" style="@($"--tile: {wallet.Color}")" aria-hidden="true"><i class="@($"bi bi-{wallet.Icon}")"></i></span>
+            <span class="row-list-main">@wallet.Name</span>
+            <span class="fw-semibold tnum @(wallet.InitialBalance < 0 ? "text-danger-emphasis" : "text-body-emphasis")">@WalletMoney.Format(wallet.InitialBalance)</span>
+        </text>;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += onWsChanged;
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        signedIn = actor.IsSignedIn();
+        await WsState.EnsureLoadedAsync();
+        load();
+    }
+
+    private void load()
+    {
+        if (WsState.Current is not { } ws)
+        {
+            wallets = [];
+            return;
+        }
+        try
+        {
+            wallets = Wallets.List(ws.Id, actor).Where(w => w.IsPublished && w.Active).ToList();
+        }
+        catch (DomainException ex)
+        {
+            wallets = [];
+            Toasts.Error(ex.Message);
+        }
+    }
+
+    private void onWsChanged() => InvokeAsync(() =>
+    {
+        managerOpen = false;
+        load();
+        StateHasChanged();
+    });
+
+    public void Dispose() => WsState.Changed -= onWsChanged;
+
+    private void openManager() => managerOpen = true;
+
+    private void closeManager() => managerOpen = false;
 }

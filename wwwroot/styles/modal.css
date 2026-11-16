@@ -83,6 +83,13 @@
     z-index: 1058;
 }
 
+@media (min-width: 768px) {
+    .editor-modal.has-popovers,
+    .editor-modal.has-popovers .editor-content {
+        overflow: visible;
+    }
+}
+
 .editor-modal.is-small {
     width: min(560px, calc(100vw - 3rem));
     height: auto;
@@ -256,3 +263,4 @@
         animation: none;
     }
 }
+

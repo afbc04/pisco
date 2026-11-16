@@ -1,75 +1,73 @@
 @page "/demo"
-@inject IStringLocalizer<DemoText> L
-@inject IStringLocalizer<CommonText> C
 @inject ToastService Toasts
 
-<PageTitle>@L["Demo_Title"] · Pisco</PageTitle>
+<PageTitle>Components · Pisco</PageTitle>
 
 <div class="page-head">
-    <h1>@L["Demo_Title"]</h1>
+    <h1>Components</h1>
     <div class="page-actions">
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info(L["Demo_Toast_InfoMessage"])'>
-            <i class="bi bi-info-circle"></i> @L["Demo_Toast_Info"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info("Just so you know.")'>
+            <i class="bi bi-info-circle"></i> Info
         </button>
         <button type="button" class="btn btn-primary" @onclick="openForm">
-            <i class="bi bi-plus-lg"></i> @L["Demo_Modal_Form"]
+            <i class="bi bi-plus-lg"></i> Form with validation
         </button>
     </div>
 </div>
-<p class="text-muted">@L["Demo_Intro"]</p>
+<p class="text-muted">The app's shared components and styles, to see and try out.</p>
 
 <section class="card card-body mb-3">
-    <h5>@L["Demo_Header_Title"]</h5>
-    <p class="text-muted mb-0">@L["Demo_Header_Text"]</p>
+    <h5>Page header</h5>
+    <p class="text-muted mb-0">The top of this page: title on the left and actions on the right (page-head + page-actions).</p>
 </section>
 
 <section class="card card-body mb-3">
-    <h5>@L["Demo_Toasts_Title"]</h5>
-    <p class="text-muted">@L["Demo_Toasts_Text"]</p>
+    <h5>Notifications</h5>
+    <p class="text-muted">They show up in the bottom right corner with a title and a message and go away after 4 seconds (ToastService).</p>
     <div class="d-flex flex-wrap gap-2">
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success(L["Demo_Toast_SuccessMessage"])'>
-            <i class="bi bi-check-circle"></i> @L["Demo_Toast_Success"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success("That went well.")'>
+            <i class="bi bi-check-circle"></i> Success
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Error(L["Demo_Toast_ErrorMessage"])'>
-            <i class="bi bi-exclamation-circle"></i> @L["Demo_Toast_Error"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Error("Something went wrong.")'>
+            <i class="bi bi-exclamation-circle"></i> Error
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Warning(L["Demo_Toast_WarningMessage"])'>
-            <i class="bi bi-exclamation-triangle"></i> @L["Demo_Toast_Warning"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Warning("Watch out for this.")'>
+            <i class="bi bi-exclamation-triangle"></i> Warning
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info(L["Demo_Toast_InfoMessage"])'>
-            <i class="bi bi-info-circle"></i> @L["Demo_Toast_Info"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Info("Just so you know.")'>
+            <i class="bi bi-info-circle"></i> Info
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success(L["Demo_Toast_CustomMessage"], L["Demo_Toast_CustomTitle"])'>
-            <i class="bi bi-type"></i> @L["Demo_Toast_Custom"]
+        <button type="button" class="btn btn-outline-secondary" @onclick='() => Toasts.Success("The March invoice was marked as paid.", "Invoice paid")'>
+            <i class="bi bi-type"></i> Custom title
         </button>
     </div>
 </section>
 
 <section class="card card-body mb-3">
-    <h5>@L["Demo_Modal_Title"]</h5>
-    <p class="text-muted">@L["Demo_Modal_Text"]</p>
+    <h5>Dialogs</h5>
+    <p class="text-muted">EntryModal: large for editors, small for confirmations (on phones the small one slides up from the bottom).</p>
     <div class="d-flex flex-wrap gap-2">
-        <button type="button" class="btn btn-outline-secondary" @onclick="() => largeOpen = true">
-            <i class="bi bi-window"></i> @L["Demo_Modal_Large"]
+        <button type="button" class="btn btn-outline-secondary" @onclick="openLarge">
+            <i class="bi bi-window"></i> Large dialog
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick="() => smallOpen = true">
-            <i class="bi bi-window-stack"></i> @L["Demo_Modal_Small"]
+        <button type="button" class="btn btn-outline-secondary" @onclick="openSmall">
+            <i class="bi bi-window-stack"></i> Small dialog
         </button>
         <button type="button" class="btn btn-outline-secondary" @onclick="openForm">
-            <i class="bi bi-ui-checks"></i> @L["Demo_Modal_Form"]
+            <i class="bi bi-ui-checks"></i> Form with validation
         </button>
-        <button type="button" class="btn btn-outline-secondary" @onclick="() => tabsOpen = true">
-            <i class="bi bi-layout-sidebar"></i> @L["Demo_Modal_Tabs"]
+        <button type="button" class="btn btn-outline-secondary" @onclick="openTabs">
+            <i class="bi bi-layout-sidebar"></i> Modal with side tabs
         </button>
     </div>
 </section>
 
 <section class="card card-body mb-3">
     <div class="page-section-head">
-        <button type="button" class="page-collapse" aria-expanded="@sectionOpen" @onclick="() => sectionOpen = !sectionOpen">
+        <button type="button" class="page-collapse" aria-expanded="@sectionOpen" @onclick="toggleSection">
             <i class="bi bi-chevron-@(sectionOpen ? "down" : "right")"></i>
             <i class="bi bi-folder2"></i>
-            @L["Demo_Collapse_Title"]
+            Collapsible section
             <span class="page-collapse-summary">@sectionItems</span>
         </button>
     </div>
@@ -78,17 +76,17 @@
         <ul class="mb-0">
             @for (var i = 1; i <= sectionItems; i++)
             {
-                <li>@L["Demo_Collapse_Item", i]</li>
+                <li>@($"Item {i}")</li>
             }
         </ul>
     }
 </section>
 
 <section class="card card-body mb-3">
-    <h5>@L["Demo_Search_Title"]</h5>
+    <h5>Search</h5>
     <div class="filter filter-search mb-2">
         <i class="bi bi-search"></i>
-        <input class="form-control" placeholder="@L["Demo_Search_Placeholder"]" @bind="search" @bind:event="oninput" />
+        <input class="form-control" placeholder="Search city…" @bind="search" @bind:event="oninput" />
     </div>
     @if (filteredCities.Any())
     {
@@ -101,33 +99,33 @@
     }
     else
     {
-        <p class="text-muted mb-0">@L["Demo_Search_Empty"]</p>
+        <p class="text-muted mb-0">Nothing found.</p>
     }
 </section>
 
 <section class="card card-body mb-3">
-    <h5>@L["Demo_Base_Title"]</h5>
+    <h5>Basic elements</h5>
 
     <div class="d-flex flex-wrap gap-2 mb-3">
-        <button type="button" class="btn btn-primary">@C["Common_Save"]</button>
-        <button type="button" class="btn btn-outline-secondary">@C["Common_Cancel"]</button>
-        <button type="button" class="btn btn-outline-danger">@C["Common_Delete"]</button>
-        <button type="button" class="btn btn-primary" disabled>@L["Demo_Disabled"]</button>
-        <button type="button" class="btn btn-link px-0"><i class="bi bi-plus-lg"></i> @L["Demo_Link"]</button>
+        <button type="button" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-outline-secondary">Cancel</button>
+        <button type="button" class="btn btn-outline-danger">Delete</button>
+        <button type="button" class="btn btn-primary" disabled>Disabled</button>
+        <button type="button" class="btn btn-link px-0"><i class="bi bi-plus-lg"></i> Link</button>
     </div>
 
     <div class="row g-3 mb-3">
         <div class="col-md-6">
-            <label class="form-label">@C["Common_Name"] <span class="required-mark">*</span></label>
-            <input class="form-control" placeholder="@C["Common_Name"]" />
+            <label class="form-label">Name <span class="required-mark">*</span></label>
+            <input class="form-control" placeholder="Name" />
         </div>
         <div class="col-md-6">
-            <label class="form-label">@C["Common_Name"] <span class="required-mark">*</span></label>
+            <label class="form-label">Name <span class="required-mark">*</span></label>
             <input class="form-control is-invalid" />
-            <div class="invalid-feedback d-block">@L["Demo_Form_Required"]</div>
+            <div class="invalid-feedback d-block">This field is required.</div>
         </div>
         <div class="col-md-6">
-            <label class="form-label">@L["Demo_Select"]</label>
+            <label class="form-label">List</label>
             <select class="form-select">
                 <option>Lisboa</option>
                 <option>Porto</option>
@@ -135,110 +133,110 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label class="form-label">@L["Demo_Range", range]</label>
+            <label class="form-label">@($"Range: {range}")</label>
             <input type="range" class="form-range" min="0" max="100" @bind="range" @bind:event="oninput" />
         </div>
         <div class="col-12">
             <label class="form-check">
                 <input type="checkbox" class="form-check-input" @bind="check" />
-                <span class="form-check-label">@L["Demo_Check"]</span>
+                <span class="form-check-label">Option enabled</span>
             </label>
-            <p class="form-text mb-0">@L["Demo_Hint"]</p>
+            <p class="form-text mb-0">Help text below a field.</p>
         </div>
         <div class="col-12">
-            <label class="form-label">@C["Common_Notes"]</label>
+            <label class="form-label">Notes</label>
             <textarea class="form-control" rows="2"></textarea>
         </div>
     </div>
 
-    <div class="alert alert-danger py-2 small">@L["Demo_Alert_Danger"]</div>
-    <div class="alert alert-warning py-2 small">@L["Demo_Alert_Warning"]</div>
+    <div class="alert alert-danger py-2 small">Error message.</div>
+    <div class="alert alert-warning py-2 small">Warning message.</div>
     <div class="d-flex flex-wrap gap-2">
-        <span class="badge text-bg-warning">@L["Demo_Public"]</span>
-        <span class="badge text-bg-secondary">@L["Demo_Badge"]</span>
+        <span class="badge text-bg-warning">Public</span>
+        <span class="badge text-bg-secondary">Badge</span>
     </div>
 </section>
 
 @if (largeOpen)
 {
-    <EntryModal Title="@L["Demo_Modal_Large"]" OnClose="() => largeOpen = false">
+    <EntryModal Title="Large dialog" OnClose="closeLarge">
         <ChildContent>
-            <p>@L["Demo_Modal_Body"]</p>
+            <p>Dialog content. Close it with the ×, with the footer button or by clicking outside.</p>
         </ChildContent>
         <Footer>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => largeOpen = false">@C["Common_Close"]</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="closeLarge">Close</button>
         </Footer>
     </EntryModal>
 }
 
 @if (smallOpen)
 {
-    <EntryModal Title="@L["Demo_Modal_Small"]" Small="true" OnClose="() => smallOpen = false">
+    <EntryModal Title="Small dialog" Small="true" OnClose="closeSmall">
         <ChildContent>
-            <p class="mb-0">@L["Demo_Modal_Body"]</p>
+            <p class="mb-0">Dialog content. Close it with the ×, with the footer button or by clicking outside.</p>
         </ChildContent>
         <Footer>
-            <button type="button" class="btn btn-primary" @onclick="confirmSmall">@C["Common_Save"]</button>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => smallOpen = false">@C["Common_Cancel"]</button>
+            <button type="button" class="btn btn-primary" @onclick="confirmSmall">Save</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="closeSmall">Cancel</button>
         </Footer>
     </EntryModal>
 }
 
 @if (formOpen)
 {
-    <EntryModal Title="@L["Demo_Modal_Form"]" Small="true" OnClose="() => formOpen = false">
+    <EntryModal Title="Form with validation" Small="true" OnClose="closeForm">
         <ChildContent>
-            <label class="form-label">@C["Common_Name"] <span class="required-mark">*</span></label>
+            <label class="form-label">Name <span class="required-mark">*</span></label>
             <input class="form-control @(nameInvalid ? "is-invalid" : null)" @bind="name" @bind:after="() => nameInvalid = false" />
             @if (nameInvalid)
             {
-                <div class="invalid-feedback d-block">@L["Demo_Form_Required"]</div>
+                <div class="invalid-feedback d-block">This field is required.</div>
             }
         </ChildContent>
         <Footer>
-            <button type="button" class="btn btn-primary" @onclick="saveForm">@C["Common_Save"]</button>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => formOpen = false">@C["Common_Cancel"]</button>
+            <button type="button" class="btn btn-primary" @onclick="saveForm">Save</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="closeForm">Cancel</button>
         </Footer>
     </EntryModal>
 }
 
 @if (tabsOpen)
 {
-    <TabbedModal Title="@L["Demo_Modal_Tabs"]" CollapseLabel="@C["Modal_CollapseTabs"]" ExpandLabel="@C["Modal_ExpandTabs"]" @bind-ActiveTab="activeTab" OnClose="() => tabsOpen = false">
+    <TabbedModal Title="Modal with side tabs" CollapseLabel="Collapse tabs" ExpandLabel="Expand tabs" @bind-ActiveTab="activeTab" OnClose="closeTabs">
         <ChildContent>
-            <TabItem Name="general" Title="@L["Demo_Tabs_General"]" Icon="sliders">
-                <h6>@L["Demo_Tabs_General"]</h6>
-                <label class="form-label">@C["Common_Name"]</label>
+            <TabItem Name="general" Title="General" Icon="sliders">
+                <h6>General</h6>
+                <label class="form-label">Name</label>
                 <input class="form-control mb-3" @bind="name" />
                 <label class="form-check">
                     <input type="checkbox" class="form-check-input" @bind="check" />
-                    <span class="form-check-label">@L["Demo_Check"]</span>
+                    <span class="form-check-label">Option enabled</span>
                 </label>
             </TabItem>
-            <TabItem Name="notes" Title="@C["Common_Notes"]" Icon="journal-text" Badge="@notes.Count.ToString()">
-                <h6>@C["Common_Notes"]</h6>
+            <TabItem Name="notes" Title="Notes" Icon="journal-text" Badge="@notes.Count.ToString()">
+                <h6>Notes</h6>
                 <ul>
                     @foreach (var note in notes)
                     {
                         <li>@note</li>
                     }
                 </ul>
-                <button type="button" class="btn btn-link px-0" @onclick='() => notes.Add(L["Demo_Collapse_Item", notes.Count + 1])'>
-                    <i class="bi bi-plus-lg"></i> @L["Demo_Link"]
+                <button type="button" class="btn btn-link px-0" @onclick='() => notes.Add($"Item {(notes.Count + 1)}")'>
+                    <i class="bi bi-plus-lg"></i> Link
                 </button>
             </TabItem>
-            <TabItem Name="advanced" Title="@L["Demo_Tabs_Advanced"]" Icon="gear">
-                <h6>@L["Demo_Tabs_Advanced"]</h6>
-                <p class="text-muted">@L["Demo_Modal_Body"]</p>
-                <label class="form-label">@L["Demo_Range", range]</label>
+            <TabItem Name="advanced" Title="Advanced" Icon="gear">
+                <h6>Advanced</h6>
+                <p class="text-muted">Dialog content. Close it with the ×, with the footer button or by clicking outside.</p>
+                <label class="form-label">@($"Range: {range}")</label>
                 <input type="range" class="form-range" min="0" max="100" @bind="range" @bind:event="oninput" />
             </TabItem>
-            <TabItem Name="locked" Title="@L["Demo_Disabled"]" Icon="lock" Disabled="true" />
+            <TabItem Name="locked" Title="Disabled" Icon="lock" Disabled="true" />
         </ChildContent>
         <Footer>
-            <span class="text-muted small me-auto">@L["Demo_Tabs_Active", activeTab ?? "general"]</span>
-            <button type="button" class="btn btn-primary" @onclick="() => tabsOpen = false">@C["Common_Save"]</button>
-            <button type="button" class="btn btn-outline-secondary" @onclick="() => tabsOpen = false">@C["Common_Cancel"]</button>
+            <span class="text-muted small me-auto">@($"Active tab: {(activeTab ?? "general")}")</span>
+            <button type="button" class="btn btn-primary" @onclick="closeTabs">Save</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="closeTabs">Cancel</button>
         </Footer>
     </TabbedModal>
 }
@@ -278,16 +276,32 @@
         nameInvalid = string.IsNullOrWhiteSpace(name);
         if (nameInvalid)
         {
-            Toasts.Error(L["Demo_Form_Fix"]);
+            Toasts.Error("Fix the highlighted fields.");
             return;
         }
         formOpen = false;
-        Toasts.Success(L["Demo_Form_Saved", name.Trim()]);
+        Toasts.Success($"Saved: {(name.Trim())}");
     }
 
     private void confirmSmall()
     {
         smallOpen = false;
-        Toasts.Success(L["Demo_Toast_SuccessMessage"]);
+        Toasts.Success("That went well.");
     }
+
+    private void openLarge() => largeOpen = true;
+
+    private void closeLarge() => largeOpen = false;
+
+    private void openSmall() => smallOpen = true;
+
+    private void closeSmall() => smallOpen = false;
+
+    private void openTabs() => tabsOpen = true;
+
+    private void closeTabs() => tabsOpen = false;
+
+    private void closeForm() => formOpen = false;
+
+    private void toggleSection() => sectionOpen = !sectionOpen;
 }

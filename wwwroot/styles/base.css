@@ -63,6 +63,15 @@
     --bs-danger-text-emphasis: var(--danger);
     --bs-danger-bg-subtle: color-mix(in srgb, var(--danger) 14%, var(--bg));
     --bs-danger-border-subtle: color-mix(in srgb, var(--danger) 35%, var(--bg));
+    --bs-warning-text-emphasis: var(--warning);
+    --bs-warning-bg-subtle: color-mix(in srgb, var(--warning) 14%, var(--bg));
+    --bs-warning-border-subtle: color-mix(in srgb, var(--warning) 35%, var(--bg));
+    --bs-secondary-bg: var(--surface-2);
+    --bs-secondary-text-emphasis: var(--muted);
+    --bs-secondary-bg-subtle: color-mix(in srgb, var(--muted) 14%, var(--bg));
+    --bs-secondary-border-subtle: color-mix(in srgb, var(--muted) 35%, var(--bg));
+    --bs-highlight-bg: color-mix(in srgb, var(--primary) 30%, transparent);
+    --bs-highlight-color: inherit;
 
     --sidebar-w: 240px;
     --navbar-h: 56px;
@@ -255,6 +264,62 @@ h1:focus {
 
 .alert {
     --bs-alert-border-radius: 0.5rem;
+}
+
+.dropdown-menu {
+    --bs-dropdown-bg: var(--surface);
+    --bs-dropdown-border-color: var(--divider);
+    --bs-dropdown-color: var(--heading);
+    --bs-dropdown-link-color: var(--heading);
+    --bs-dropdown-link-hover-color: var(--on-primary);
+    --bs-dropdown-link-hover-bg: var(--primary);
+    --bs-dropdown-link-active-color: var(--heading);
+    --bs-dropdown-link-active-bg: var(--primary-tint);
+    --bs-dropdown-divider-bg: var(--divider);
+    --bs-dropdown-font-size: 0.85rem;
+    box-shadow: var(--overlay-shadow);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.dropdown-item:hover .form-check-input,
+.dropdown-item:hover .form-check-input:checked {
+    border-color: var(--on-primary) !important;
+}
+
+.dropdown > [role="combobox"] {
+    cursor: pointer;
+}
+
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--body-color);
+    --bs-table-hover-bg: var(--primary-soft);
+    --bs-table-hover-color: var(--body-color);
+    --bs-border-color: var(--divider);
+}
+
+.modal {
+    --bs-modal-zindex: 1071;
+    --bs-modal-bg: var(--surface);
+    --bs-modal-border-color: var(--divider);
+    --bs-modal-border-radius: 0.75rem;
+}
+
+.modal-backdrop {
+    --bs-backdrop-zindex: 1070;
+    --bs-backdrop-opacity: 1;
+    --bs-backdrop-bg: var(--scrim);
+}
+
+.input-group-text {
+    background-color: var(--surface-2);
+    border-color: var(--border-color);
+    color: var(--muted);
 }
 
 .form-range::-webkit-slider-thumb {

@@ -1,16 +1,13 @@
 @implements IDisposable
-@inject IStringLocalizer<WorkspacesText> L
-@inject IStringLocalizer<CommonText> C
-@inject IStringLocalizer<DomainText> D
 @inject WorkspaceState WsState
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
 @inject NavigationManager Nav
 
 <div class="ws-switch">
-    <button type="button" class="ws-trigger @(open ? "is-open" : null)" title="@L["Ws_Current"]"
+    <button type="button" class="ws-trigger @(open ? "is-open" : null)" title="Current workspace"
             aria-haspopup="listbox" aria-expanded="@open" @onclick="toggleAsync">
-        <span class="ws-trigger-name">@(WsState.Current?.Name ?? L["Ws_None"])</span>
+        <span class="ws-trigger-name">@(WsState.Current?.Name ?? "No workspace")</span>
         <i class="bi bi-chevron-down ws-trigger-chev"></i>
     </button>
 
@@ -18,18 +15,18 @@
     {
         <div class="ws-scrim" @onclick="close"></div>
         <div class="ws-pop" @onkeydown="onKey">
-            <div class="ws-pop-label">@L["Params_Workspaces"]</div>
+            <div class="ws-pop-label">Workspaces</div>
             @if (accessible is null)
             {
-                <div class="ws-pop-note">@C["Common_Loading"]</div>
+                <div class="ws-pop-note">Loading…</div>
             }
             else if (accessible.Count == 0)
             {
-                <div class="ws-pop-note">@L["Ws_Pick_Empty"]</div>
+                <div class="ws-pop-note">You don't have access to any workspace yet. Ask the administrator to add you to one.</div>
             }
             else
             {
-                <div role="listbox" aria-label="@L["Params_Workspaces"]">
+                <div role="listbox" aria-label="Workspaces">
                     @foreach (var ws in accessible)
                     {
                         var active = WsState.Current?.Id == ws.Id;
@@ -38,7 +35,7 @@
                             <span class="ws-pop-name">@ws.Name</span>
                             @if (!active && signedIn && ws.IsPublic)
                             {
-                                <span class="ws-public" title="@L["Ws_Public_Hint"]"><i class="bi bi-globe2"></i> @L["Ws_Public"]</span>
+                                <span class="ws-public" title="Visitors who are not signed in can open it."><i class="bi bi-globe2"></i> Public</span>
                             }
                             <i class="bi bi-check-lg ws-pop-check"></i>
                         </button>
@@ -50,7 +47,7 @@
                 <div class="ws-pop-sep"></div>
                 <button type="button" class="ws-pop-item is-muted" @onclick="manage">
                     <i class="bi bi-gear"></i>
-                    <span class="ws-pop-name">@L["Ws_Manage"]</span>
+                    <span class="ws-pop-name">Manage workspaces</span>
                 </button>
             }
         </div>
@@ -100,7 +97,7 @@
         }
         catch (DomainException ex)
         {
-            Toasts.Error(D[ex.Message, ex.Args]);
+            Toasts.Error(ex.Message);
         }
     }
 

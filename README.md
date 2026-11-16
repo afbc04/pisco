@@ -215,10 +215,11 @@ Data/              acesso à BD (Entity Framework Core), SQL e seed
   Sql/             config.sql, finance.sql
 Domain/            entidades (Config, Workspace)
 Services/          configuração, autenticação, workspaces, toasts
-Resources/         traduções (pt / en)
 wwwroot/           css, js, fontes, imagens
 docs/              documentação e notas
 ```
+
+**Textos:** a interface é só em inglês, com os textos escritos diretamente nos componentes (não há ficheiros de tradução). As `DomainException` já levam a mensagem final; quando o erro é de um campo, indicam-no em `Field` (`DomainField.Name`, `DomainField.Balance`) para o editor o mostrar por baixo do campo certo.
 
 Convenção de nomes: pastas, tipos e membros públicos em `PascalCase`; tudo o que é privado começa por minúscula (`camelCase`).
 

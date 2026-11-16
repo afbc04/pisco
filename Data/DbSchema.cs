@@ -4,7 +4,7 @@ namespace Pisco.Data;
 
 public static class DbSchema
 {
-    static readonly string[] scriptFiles = ["sql/config.sql"];
+    static readonly string[] scriptFiles = ["sql/config.sql", "sql/finance.sql"];
 
     public static async Task EnsureCreatedAsync(NpgsqlDataSource db)
     {

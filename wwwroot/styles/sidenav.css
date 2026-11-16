@@ -132,17 +132,8 @@
     transform: rotate(90deg) scale(1.15);
 }
 
-.brand-lang {
-    gap: 0.25rem;
-}
 
-.brand-lang span {
-    font-size: 0.68rem;
-}
 
-.brand-lang:hover .bi {
-    transform: rotateY(180deg) scale(1.1);
-}
 
 .sidenav-title {
     font-weight: 700;

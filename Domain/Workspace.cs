@@ -23,9 +23,9 @@ public class Workspace
     {
         name = (name ?? "").Trim();
         if (name.Length == 0)
-            throw new DomainException("Domain_Name_Empty");
+            throw new DomainException("The name can't be empty", DomainField.Name);
         if (name.Length > NameLengthMax)
-            throw new DomainException("Domain_Name_TooLong", NameLengthMax);
+            throw new DomainException($"The name is too long (max {NameLengthMax})", DomainField.Name);
         Name = name;
     }
 

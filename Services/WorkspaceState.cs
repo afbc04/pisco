@@ -46,7 +46,7 @@ public class WorkspaceState(
     public async Task SelectAsync(long workspaceId)
     {
         var ws = (await ListAccessibleAsync()).FirstOrDefault(w => w.Id == workspaceId)
-                 ?? throw new DomainException("Domain_Workspace_NotFound");
+                 ?? throw new DomainException("The workspace doesn't exist.");
         if (await signedInAsync())
             await config.SetLastWorkspaceAsync(ws.Id);
         Current = ws;

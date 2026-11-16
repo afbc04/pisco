@@ -1,13 +1,13 @@
 <div class="col-sm-6 col-xxl-3">
-    <div class="panel-card kpi" style="--k: @Color">
-        <div class="kpi-top">
-            <span class="kpi-icon"><i class="@Icon"></i></span>
-            <span class="kpi-label">@Label</span>
+    <div class="panel-card h-100 d-flex flex-column gap-2 p-3" style="--tile: @Color">
+        <div class="d-flex align-items-center gap-2">
+            <span class="icon-tile"><i class="@Icon"></i></span>
+            <span class="small fw-semibold text-body-secondary">@Label</span>
             @Action
         </div>
-        <div class="kpi-value">@Value</div>
-        <div class="kpi-chart is-empty"></div>
-        <div class="kpi-foot">@Foot</div>
+        <div class="fs-4 fw-bold lh-1 text-body-emphasis tnum">@Value</div>
+        <div class="kpi-chart my-1"></div>
+        <div class="mt-auto d-flex flex-wrap align-items-center gap-2 small text-body-secondary">@Foot</div>
     </div>
 </div>
 

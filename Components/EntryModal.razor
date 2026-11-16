@@ -1,5 +1,5 @@
 <div class="editor-backdrop" @onclick="OnClose"></div>
-<div class="editor-modal @(Small ? "is-small" : null)" role="dialog" aria-modal="true">
+<div class="editor-modal @(Small ? "is-small" : null) @Class" role="dialog" aria-modal="true">
     <div class="editor-modal-head">
         <h5 class="editor-modal-title">@Title</h5>
         <button type="button" class="editor-close" aria-label="Close" @onclick="OnClose"><i class="bi bi-x-lg"></i></button>
@@ -24,4 +24,5 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public bool Small { get; set; }
+    [Parameter] public string? Class { get; set; }
 }

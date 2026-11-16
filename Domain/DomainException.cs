@@ -1,6 +1,8 @@
 namespace Pisco.Domain;
 
-public sealed class DomainException(string messageKey, params object[] args) : Exception(messageKey)
+public enum DomainField { Name }
+
+public class DomainException(string message, DomainField? field = null) : Exception(message)
 {
-    public object[] Args { get; } = args;
+    public DomainField? Field { get; } = field;
 }

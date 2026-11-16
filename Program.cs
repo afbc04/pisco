@@ -1,24 +1,25 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pisco.Components;
 using Pisco.Data;
+using Pisco.Repository.Finance;
 using Pisco.Services;
+using Pisco.Services.Finance;
 
 foreach (var line in File.Exists(".env") ? File.ReadAllLines(".env") : [])
     if (line.Split('=', 2) is [var key, var value] && !key.StartsWith('#') && Environment.GetEnvironmentVariable(key.Trim()) is null)
         Environment.SetEnvironmentVariable(key.Trim(), value.Trim());
 
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-GB");
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
-
-var cultures = new[] { "pt", "en" };
 
 builder.Services.AddNpgsqlDataSource(new NpgsqlConnectionStringBuilder
 {
@@ -56,6 +57,8 @@ builder.Services.AddScoped<ConfigService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<WorkspaceState>();
+builder.Services.AddScoped<WalletRepository>();
+builder.Services.AddScoped<WalletManager>();
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddSingleton<AdminPresence>();
 builder.Services.AddScoped<PresenceCircuit>();
@@ -73,10 +76,6 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 
-app.UseRequestLocalization(o => o
-    .SetDefaultCulture("pt")
-    .AddSupportedCultures(cultures)
-    .AddSupportedUICultures(cultures));
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache",
@@ -88,16 +87,6 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.MapFallback(() => Results.Redirect("/"));
-
-app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext http) =>
-{
-    if (cultures.Contains(culture))
-        http.Response.Cookies.Append(
-            CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true });
-    return Results.LocalRedirect(AppRoutes.LocalOrHome(redirectUri));
-});
 
 var auth = app.MapGroup("/auth");
 
