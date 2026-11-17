@@ -1,20 +1,25 @@
 
+@using System.Security.Claims
+@implements IDisposable
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+
 <div class="row g-3 mb-4">
 
     <!-- Revenue KPI -->
     <FinanceKpiCard Label="Income" Icon="bi bi-graph-up-arrow" Color="var(--success)">
-        <Action>@categoriesButton</Action>
+        <Action>@categoriesButton(CategoryFlow.Income)</Action>
+        <Value>@(0m.ToString("N2")) €</Value>
+        <Foot>@noPrevious</Foot>
+    </FinanceKpiCard>
+
+    <FinanceKpiCard Label="Expenses" Icon="bi bi-graph-down-arrow" Color="var(--danger)">
+        <Action>@categoriesButton(CategoryFlow.Expense)</Action>
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot>@noPrevious</Foot>
     </FinanceKpiCard>
 
     <!--
-    <FinanceKpiCard Label="Expenses" Icon="bi bi-arrow-up-right" Color="var(--danger)">
-        <Action>@categoriesButton</Action>
-        <Value>@(0m.ToString("N2")) €</Value>
-        <Foot>@noPrevious</Foot>
-    </FinanceKpiCard>
-
     <FinanceKpiCard Label="Result" Icon="bi bi-plus-slash-minus" Color="var(--primary)">
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot><span>Income − expenses</span></Foot>
@@ -33,7 +38,15 @@
     -->
 </div>
 
+@if (categoriesFlow is { } flow)
+{
+    <CategoriesModal Flow="flow" OnClose="closeCategories" />
+}
+
 @code {
+    private bool signedIn;
+    private CategoryFlow? categoriesFlow;
+
     private static DateOnly endOfMonth
     {
         get
@@ -43,10 +56,30 @@
         }
     }
 
-    private RenderFragment categoriesButton =>
-        @<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill ms-auto py-0 small" title="Manage categories">
+    private RenderFragment? categoriesButton(CategoryFlow flow) => !signedIn || WsState.Current is null ? null :
+        @<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill ms-auto py-0 small" title="Manage categories"
+                 @onclick="() => openCategories(flow)">
             <i class="bi bi-tags"></i><span>Categories</span>
         </button>;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WsState.Changed += onWsChanged;
+        signedIn = (await AuthProvider.GetAuthenticationStateAsync()).User.IsSignedIn();
+        await WsState.EnsureLoadedAsync();
+    }
+
+    private void onWsChanged() => InvokeAsync(() =>
+    {
+        categoriesFlow = null;
+        StateHasChanged();
+    });
+
+    private void openCategories(CategoryFlow flow) => categoriesFlow = flow;
+
+    private void closeCategories() => categoriesFlow = null;
+
+    public void Dispose() => WsState.Changed -= onWsChanged;
 
     private RenderFragment noPrevious =>
         @<span><span class="badge bg-body-secondary text-body-secondary">—</span> no data in the previous period</span>;

@@ -1,0 +1,449 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject CategoryManager Categories
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="Categories" Class="manage-modal" OnClose="OnClose">
+    <ChildContent>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Type">
+                @foreach (var option in flows)
+                {
+                    <button type="button" class="btn btn-outline-secondary @(flow == option ? "active" : null)" aria-pressed="@(flow == option ? "true" : "false")"
+                            @onclick="() => showFlow(option)">
+                        <span class="dot" style="@($"--tile: {CategoryLook.FlowColor(option)}")"></span>
+                        @CategoryLook.FlowName(option)
+                    </button>
+                }
+            </div>
+            <div class="filter filter-search">
+                <i class="bi bi-search"></i>
+                <input type="search" class="form-control" placeholder="Search by name" aria-label="Search by name"
+                       value="@search" @oninput="onSearch" />
+            </div>
+            <Dropdown Class="flex-grow-1" TriggerClass="form-select form-select-sm d-flex flex-wrap align-items-center gap-1" Label="Status" Multiple="true">
+                <Trigger>
+                    @if (shown.Count == 0)
+                    {
+                        <span class="text-body-secondary">Status</span>
+                    }
+                    @foreach (var status in statuses.Where(shown.Contains))
+                    {
+                        <span class="@CategoryLook.Badge(status) d-inline-flex align-items-center gap-1">
+                            @CategoryLook.StatusPlural(status)
+                            <button type="button" class="btn p-0 border-0 lh-1 text-reset" title="@($"Remove filter: {CategoryLook.StatusPlural(status)}")"
+                                    aria-label="@($"Remove filter: {CategoryLook.StatusPlural(status)}")"
+                                    @onclick="() => toggle(status)" @onclick:stopPropagation="true">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </span>
+                    }
+                </Trigger>
+                <ChildContent>
+                    <DropdownItem Checkbox="true" Class="fw-semibold" Selected="@(shown.Count == statuses.Length)" OnClick="toggleAll">All</DropdownItem>
+                    <hr class="dropdown-divider" />
+                    @foreach (var status in statuses)
+                    {
+                        <DropdownItem Checkbox="true" Selected="@shown.Contains(status)" OnClick="() => toggle(status)">
+                            <span class="dot text-@(CategoryLook.StatusColor(status))-emphasis"></span>
+                            @CategoryLook.StatusPlural(status)
+                        </DropdownItem>
+                    }
+                </ChildContent>
+            </Dropdown>
+            <button type="button" class="btn btn-primary btn-sm ms-auto" @onclick="() => openEditor(null)">
+                <i class="bi bi-plus-lg"></i> New category
+            </button>
+        </div>
+
+        <div class="manage-table flex-grow-1 d-flex flex-column border rounded-3 overflow-hidden">
+            <div class="d-flex align-items-center gap-3 px-3 border-bottom">
+                <ul class="nav nav-underline small" role="tablist">
+                    @foreach (var option in kindTabs)
+                    {
+                        <li class="nav-item" role="presentation">
+                            <button type="button" role="tab" class="nav-link py-2 @(tab == option ? "active" : null)" aria-selected="@(tab == option ? "true" : "false")"
+                                    @onclick="() => showTab(option)">
+                                @(option == KindTab.Simple ? "Simple" : "Composite")
+                            </button>
+                        </li>
+                    }
+                </ul>
+                @if (all is not null && tab == KindTab.Simple && parentIds.Count > 0)
+                {
+                    <button type="button" class="btn btn-sm btn-link text-body-secondary text-decoration-none ms-auto px-0" @onclick="toggleAllExpanded">
+                        <i class="bi bi-arrows-@(allExpanded ? "collapse" : "expand")"></i>
+                        @(allExpanded ? "Collapse all" : "Expand all")
+                    </button>
+                }
+            </div>
+            @if (all is null)
+            {
+                <p class="text-body-secondary text-center my-4">Loading…</p>
+            }
+            else if (roots.Count == 0)
+            {
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center gap-2 py-5 px-3 text-body-secondary text-center">
+                    <i class="bi bi-@(inTab.Count == 0 ? "tags" : "funnel") fs-4"></i>
+                    <span>@(inTab.Count == 0 ? $"No {(tab == KindTab.Simple ? "simple" : "composite")} {CategoryLook.FlowName(flow).ToLowerInvariant()} categories yet." : shown.Count == 0 ? "No status selected" : "No categories match the filters.")</span>
+                    @if (inTab.Count > 0)
+                    {
+                        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="clearFilters">Clear filters</button>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="flex-grow-1 overflow-auto">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="text-uppercase text-body-secondary">
+                            <tr>
+                                @header("Category", CategorySort.Name, "ps-3")
+                                @header("Status", CategorySort.Status, null)
+                                @header("Active", CategorySort.Active, "pe-3")
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in pageRows)
+                            {
+                                @row(category, false, false)
+                                @if (isOpen(category))
+                                {
+                                    var visible = children(category);
+                                    @foreach (var child in visible)
+                                    {
+                                        @row(child, true, child == visible[^1])
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 px-3 py-2 border-top small text-body-secondary">
+                    <select class="form-select form-select-sm w-auto me-auto" title="Rows per page" aria-label="Rows per page" value="@pageSize" @onchange="onPageSize">
+                        @foreach (var size in pageSizes)
+                        {
+                            <option value="@size">@($"{size} / page")</option>
+                        }
+                    </select>
+                    <span class="tnum">@($"{currentPage * pageSize + 1}–{Math.Min((currentPage + 1) * pageSize, roots.Count)} of {roots.Count}")</span>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary" title="Previous page" aria-label="Previous page"
+                                disabled="@(currentPage == 0)" @onclick="previousPage">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" title="Next page" aria-label="Next page"
+                                disabled="@(currentPage >= pageCount - 1)" @onclick="nextPage">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">Close</button>
+    </Footer>
+</EntryModal>
+
+@if (editorOpen)
+{
+    <CategoryEditor @key="(editing, newParent)" Category="editing" Parent="newParent" Flow="flow" OnAddSubcategory="openSubcategory" OnClose="closeEditor" OnSaved="saved" OnChanged="changed" />
+}
+
+@code {
+    [Parameter] public CategoryFlow Flow { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static readonly CategoryFlow[] flows = [CategoryFlow.Expense, CategoryFlow.Income];
+    private static readonly CategoryStatus[] statuses = [CategoryStatus.Published, CategoryStatus.Draft, CategoryStatus.Deleted];
+    private static readonly CategoryStatus[] defaultShown = [CategoryStatus.Published, CategoryStatus.Draft];
+    private static readonly int[] pageSizes = [10, 25, 50];
+
+    private enum CategorySort { Name, Status, Active }
+
+    private enum KindTab { Simple, Composite }
+
+    private static readonly KindTab[] kindTabs = [KindTab.Simple, KindTab.Composite];
+
+    private ClaimsPrincipal actor = new();
+    private CategoryFlow flow;
+    private KindTab tab = KindTab.Simple;
+    private List<Category>? all;
+    private readonly HashSet<CategoryStatus> shown = [.. defaultShown];
+    private readonly HashSet<int> expanded = [];
+    private string search = "";
+    private int page;
+    private int pageSize = pageSizes[0];
+    private bool editorOpen;
+    private Category? editing;
+    private int? newParent;
+    private CategorySort? sortBy;
+    private bool sortDescending;
+
+    private List<Category> inTab => all!
+        .Where(c => tab == KindTab.Composite ? c.Kind == CategoryKind.Composite : c.Kind != CategoryKind.Composite)
+        .ToList();
+
+    private bool matches(Category category) =>
+        shown.Contains(category.Status)
+        && (search.Length == 0 || category.Name.Contains(search.Trim(), StringComparison.CurrentCultureIgnoreCase));
+
+    private List<Category> roots
+    {
+        get
+        {
+            var rows = inTab;
+            var ids = rows.Select(c => c.ID).ToHashSet();
+            var wanted = rows.Where(matches)
+                .Select(c => c.Parent is { } parent && ids.Contains(parent) ? parent : c.ID)
+                .ToHashSet();
+            return ordered(rows.Where(c => wanted.Contains(c.ID) && !(c.Parent is { } parent && ids.Contains(parent)))).ToList();
+        }
+    }
+
+    private List<Category> children(Category parent) =>
+        ordered(all!.Where(c => c.Parent == parent.ID && matches(c))).ToList();
+
+    private int childCount(Category parent) => all!.Count(c => c.Parent == parent.ID);
+
+    private HashSet<int> parentIds => all!.Where(c => c.Parent is not null).Select(c => c.Parent!.Value).ToHashSet();
+
+    private bool allExpanded => parentIds.All(expanded.Contains);
+
+    private bool isOpen(Category category) =>
+        tab == KindTab.Simple
+        && childCount(category) > 0
+        && (expanded.Contains(category.ID) || (search.Length > 0 && children(category).Count > 0));
+
+    private IEnumerable<Category> ordered(IEnumerable<Category> rows) => sortBy switch
+    {
+        CategorySort.Name => by(rows, c => c.Name, StringComparer.CurrentCultureIgnoreCase),
+        CategorySort.Status => by(rows, c => Array.IndexOf(statuses, c.Status)).ThenBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase),
+        CategorySort.Active => by(rows, c => c.Active).ThenBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase),
+        _ => rows
+            .OrderBy(c => Array.IndexOf(statuses, c.Status))
+            .ThenBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase),
+    };
+
+    private IOrderedEnumerable<Category> by<T>(IEnumerable<Category> rows, Func<Category, T> key, IComparer<T>? comparer = null) =>
+        sortDescending ? rows.OrderByDescending(key, comparer) : rows.OrderBy(key, comparer);
+
+    private string? ariaSort(CategorySort column) =>
+        sortBy != column ? null : sortDescending ? "descending" : "ascending";
+
+    private string sortIcon(CategorySort column) =>
+        sortBy != column ? "chevron-expand opacity-50" : sortDescending ? "chevron-down" : "chevron-up";
+
+    private RenderFragment header(string label, CategorySort column, string? cellClass) =>
+        @<th class="@cellClass" aria-sort="@ariaSort(column)">
+            <button type="button" class="border-0 bg-transparent p-0 text-reset text-uppercase fw-bold d-inline-flex align-items-center gap-1"
+                    title="@($"Sort by {label.ToLowerInvariant()}")" @onclick="() => sort(column)">
+                @label
+                <i class="bi bi-@sortIcon(column)"></i>
+            </button>
+        </th>;
+
+    private int pageCount => Math.Max(1, (roots.Count + pageSize - 1) / pageSize);
+
+    private int currentPage => Math.Clamp(page, 0, pageCount - 1);
+
+    private List<Category> pageRows => roots.Skip(currentPage * pageSize).Take(pageSize).ToList();
+
+    private RenderFragment row(Category category, bool child, bool lastChild) =>
+        @<tr role="button" @onclick="() => openEditor(category)">
+            <td class="ps-3">
+                <div class="d-flex align-items-center gap-2">
+                    @if (tab == KindTab.Simple)
+                    {
+                        @if (child)
+                        {
+                            <span class="tree-toggle"></span>
+                            <span class="tree-line @(lastChild ? null : "is-mid")"></span>
+                        }
+                        else if (childCount(category) > 0)
+                        {
+                            <button type="button" class="tree-toggle btn btn-sm btn-link p-0 text-body-secondary"
+                                    title="@(isOpen(category) ? "Hide subcategories" : "Show subcategories")" aria-expanded="@(isOpen(category) ? "true" : "false")"
+                                    @onclick="() => toggleExpanded(category.ID)" @onclick:stopPropagation="true">
+                                <i class="bi bi-chevron-@(isOpen(category) ? "down" : "right")"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="tree-toggle"></span>
+                        }
+                    }
+                    <span class="d-inline-flex justify-content-center @(category.IsDeleted ? "opacity-50" : null)" style="width: 2rem">
+                        <CategoryIcon Icon="@category.Icon" Kind="category.Kind" Flow="category.Flow" />
+                    </span>
+                    <div class="d-flex flex-column lh-sm overflow-hidden">
+                        <span class="text-truncate @(child ? null : "fw-semibold") @(category.IsDeleted ? "text-body-secondary text-decoration-line-through" : "text-body-emphasis")"><Highlight Text="@category.Name" Query="@search" /></span>
+                        <span class="text-body-secondary">
+                            @if (!child && childCount(category) is > 0 and var count)
+                            {
+                                <span>@($"{count} subcategor{(count == 1 ? "y" : "ies")}")</span>
+                                <span class="mx-1" aria-hidden="true">·</span>
+                            }
+                            @(category.IsDeleted ? $"deleted {day(category.DeletedDate)}" : $"updated {category.UpdatedDate.ToLocalTime().ToString("d MMM yyyy")}")
+                        </span>
+                    </div>
+                </div>
+            </td>
+            <td class="text-nowrap">
+                <span class="@CategoryLook.Badge(category.Status)">@CategoryLook.StatusName(category.Status)</span>
+            </td>
+            <td class="pe-3" title="@(category.IsDeleted ? null : category.Active ? "In use" : $"Inactive since {day(category.InactiveDate)}")">
+                @if (!category.IsDeleted)
+                {
+                    <input type="checkbox" class="form-check-input m-0 pe-none" tabindex="-1" aria-readonly="true"
+                           aria-label="@($"Active: {category.Name}")" checked="@category.Active" />
+                }
+            </td>
+        </tr>;
+
+    private static string day(DateOnly? date) => date?.ToString("d MMM yyyy") ?? "—";
+
+    protected override async Task OnInitializedAsync()
+    {
+        flow = Flow;
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        load();
+    }
+
+    private void load()
+    {
+        var ws = WsState.Current!.Id;
+        try
+        {
+            all = [.. Categories.List(ws, flow, actor), .. Categories.ListDeleted(ws, flow, actor)];
+        }
+        catch (DomainException ex)
+        {
+            all = [];
+            Toasts.Error(ex.Message);
+        }
+    }
+
+    private void showTab(KindTab option)
+    {
+        tab = option;
+        page = 0;
+    }
+
+    private void toggleExpanded(int id)
+    {
+        if (!expanded.Remove(id))
+            expanded.Add(id);
+    }
+
+    private void toggleAllExpanded()
+    {
+        if (allExpanded)
+            expanded.Clear();
+        else
+            expanded.UnionWith(parentIds);
+    }
+
+    private void showFlow(CategoryFlow option)
+    {
+        if (flow == option)
+            return;
+        flow = option;
+        expanded.Clear();
+        search = "";
+        page = 0;
+        all = null;
+        load();
+    }
+
+    private void onSearch(ChangeEventArgs e)
+    {
+        search = e.Value?.ToString() ?? "";
+        page = 0;
+    }
+
+    private void onPageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var size) && pageSizes.Contains(size))
+        {
+            pageSize = size;
+            page = 0;
+        }
+    }
+
+    private void toggle(CategoryStatus status)
+    {
+        if (!shown.Remove(status))
+            shown.Add(status);
+        page = 0;
+    }
+
+    private void toggleAll()
+    {
+        if (shown.Count == statuses.Length)
+            shown.Clear();
+        else
+            shown.UnionWith(statuses);
+        page = 0;
+    }
+
+    private void clearFilters()
+    {
+        search = "";
+        shown.Clear();
+        shown.UnionWith(defaultShown);
+        page = 0;
+    }
+
+    private void openEditor(Category? category)
+    {
+        editing = category;
+        newParent = null;
+        editorOpen = true;
+    }
+
+    private void openSubcategory(Category parent)
+    {
+        editing = null;
+        newParent = parent.ID;
+        editorOpen = true;
+    }
+
+    private async Task saved(string message)
+    {
+        editorOpen = false;
+        load();
+        Toasts.Success(message);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task changed()
+    {
+        load();
+        await OnChanged.InvokeAsync();
+    }
+
+    private void sort(CategorySort column)
+    {
+        if (sortBy != column)
+        {
+            sortBy = column;
+            sortDescending = false;
+        }
+        else if (!sortDescending)
+            sortDescending = true;
+        else
+            sortBy = null;
+        page = 0;
+    }
+
+    private void previousPage() => page = currentPage - 1;
+
+    private void nextPage() => page = currentPage + 1;
+
+    private void closeEditor() => editorOpen = false;
+}

@@ -5,7 +5,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject ToastService Toasts
 
-<EntryModal Title="@(isNewEntry ? "New wallet" : "Edit wallet")" Small="true" Class="has-popovers wallet-editor" OnClose="OnClose">
+<EntryModal Title="@(isNewEntry ? "New wallet" : "Edit wallet")" Small="true" Class="has-popovers side-editor" OnClose="OnClose">
     <ChildContent>
         <div class="row g-0 flex-grow-1">
             <div class="col-md p-4">
@@ -84,7 +84,7 @@
                 </fieldset>
             </div>
 
-            <aside class="col-md-3 wallet-side d-flex flex-column gap-3 p-4 border-top small text-body-emphasis tnum">
+            <aside class="col-md-3 side-panel d-flex flex-column gap-3 p-4 border-top small text-body-emphasis tnum">
                 @if (current is { } w)
                 {
                     <span class="d-inline-flex flex-wrap align-items-center gap-2 fw-semibold">

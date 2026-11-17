@@ -295,6 +295,15 @@ h1:focus {
     cursor: pointer;
 }
 
+.nav {
+    --bs-nav-link-color: var(--muted);
+    --bs-nav-link-hover-color: var(--heading);
+}
+
+.nav-underline .nav-link.active {
+    border-bottom-color: var(--primary);
+}
+
 .table {
     --bs-table-bg: transparent;
     --bs-table-color: var(--body-color);

@@ -8,6 +8,7 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<Config> Config => Set<Config>();
     public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -59,6 +60,33 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
             wallet.Ignore(w => w.IsPublished);
 
             wallet.HasOne<Workspace>().WithMany().HasForeignKey(w => w.Workspace).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        model.Entity<Category>(category =>
+        {
+            category.ToTable("categories");
+            category.HasKey(c => c.ID);
+
+            category.Property(c => c.ID).HasColumnName("id").UseIdentityAlwaysColumn();
+            category.Property(c => c.Workspace).HasColumnName("workspace_id");
+            category.Property(c => c.Flow).HasColumnName("flow");
+            category.Property(c => c.Kind).HasColumnName("kind");
+            category.Property(c => c.Parent).HasColumnName("parent_id");
+            category.Property(c => c.Name).HasColumnName("name").HasMaxLength(Category.NameLengthMax).IsRequired();
+            category.Property(c => c.Icon).HasColumnName("icon").HasMaxLength(Category.IconLengthMax).IsRequired();
+            category.Property(c => c.Active).HasColumnName("active");
+            category.Property(c => c.CreationDate).HasColumnName("creation_date");
+            category.Property(c => c.UpdatedDate).HasColumnName("updated_date");
+            category.Property(c => c.InactiveDate).HasColumnName("inactive_date");
+            category.Property(c => c.DeletedDate).HasColumnName("deleted_date");
+            category.Property(c => c.Status).HasColumnName("status");
+            category.Ignore(c => c.IsDeleted);
+            category.Ignore(c => c.IsDraft);
+            category.Ignore(c => c.IsPublished);
+            category.Ignore(c => c.IsSubcategory);
+
+            category.HasOne<Workspace>().WithMany().HasForeignKey(c => c.Workspace).OnDelete(DeleteBehavior.Cascade);
+            category.HasOne<Category>().WithMany().HasForeignKey(c => c.Parent).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

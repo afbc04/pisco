@@ -1,0 +1,417 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject CategoryManager Categories
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="@title" Small="true" Class="has-popovers side-editor" OnClose="OnClose">
+    <ChildContent>
+        <div class="row g-0 flex-grow-1">
+            <div class="col-md p-4">
+                <fieldset disabled="@locked">
+                    <div class="row mb-3">
+                        <label for="category-name" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                            Name
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="d-flex gap-2">
+                                <Dropdown TriggerClass="d-inline-flex" MenuClass="d-grid gap-1 p-2 icon-grid" Title="Icon" Label="Icon" Disabled="@locked">
+                                    <Trigger><CategoryIcon Icon="@form.Icon" Kind="form.Kind" Flow="flow" Class="is-large" /></Trigger>
+                                    <ChildContent>
+                                        @foreach (var option in CategoryLook.Icons)
+                                        {
+                                            <DropdownItem Class="justify-content-center px-0 py-1 rounded" Selected="@(form.Icon == option)" ShowCheck="false"
+                                                          title="@option" aria-label="@option" OnClick="() => pickIcon(option)">
+                                                <i class="@($"bi bi-{option}")"></i>
+                                            </DropdownItem>
+                                        }
+                                    </ChildContent>
+                                </Dropdown>
+                                <input id="category-name" class="form-control @(validator.NameError is null ? null : "is-invalid")" maxlength="@Category.NameLengthMax"
+                                       @bind="form.Name" @bind:event="oninput" @bind:after="validator.ClearName" autofocus />
+                            </div>
+                            @if (validator.NameError is not null)
+                            {
+                                <div class="invalid-feedback d-block">@validator.NameError</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <span class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                            Type
+                        </span>
+                        <Dropdown Class="col-sm-9" Label="Type" Disabled="@locked">
+                            <Trigger>
+                                <CategoryIcon Icon="@form.Icon" Kind="form.Kind" Flow="flow" />
+                                @CategoryLook.KindName(form.Kind)
+                            </Trigger>
+                            <ChildContent>
+                                @foreach (var option in CategoryLook.Kinds)
+                                {
+                                    <DropdownItem Selected="@(form.Kind == option)" OnClick="() => pickKind(option)">
+                                        <span class="d-inline-flex justify-content-center" style="width: 2rem">
+                                            <CategoryIcon Icon="@form.Icon" Kind="option" Flow="flow" />
+                                        </span>
+                                        <span class="d-flex flex-column lh-sm">
+                                            <span class="fw-semibold">@CategoryLook.KindName(option)</span>
+                                            <span class="small opacity-75">@CategoryLook.KindHint(option)</span>
+                                        </span>
+                                    </DropdownItem>
+                                }
+                            </ChildContent>
+                        </Dropdown>
+                    </div>
+
+                    <div class="row mb-3">
+                        <span class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                            Belongs to
+                        </span>
+                        <div class="col-sm-9">
+                            <Dropdown Label="Belongs to" Disabled="@(locked || !isSubcategory)"
+                                      TriggerClass="@($"form-select d-flex align-items-center gap-2 text-start {(validator.ParentError is null ? null : "is-invalid")}")">
+                                <Trigger>
+                                    @if (!isSubcategory)
+                                    {
+                                        <span class="text-body-secondary">Only for subcategories</span>
+                                    }
+                                    else if (parent is { } p)
+                                    {
+                                        <CategoryIcon Icon="@p.Icon" Kind="p.Kind" Flow="p.Flow" />
+                                        @p.Name
+                                    }
+                                    else
+                                    {
+                                        <span class="text-body-secondary">Pick a simple category</span>
+                                    }
+                                </Trigger>
+                                <ChildContent>
+                                    @if (parents.Count == 0)
+                                    {
+                                        <span class="dropdown-item-text small text-body-secondary">There are no simple categories yet.</span>
+                                    }
+                                    @foreach (var option in parents)
+                                    {
+                                        <DropdownItem Selected="@(form.Parent == option.ID)" OnClick="() => pickParent(option.ID)">
+                                            <CategoryIcon Icon="@option.Icon" Kind="option.Kind" Flow="option.Flow" />
+                                            @option.Name
+                                        </DropdownItem>
+                                    }
+                                </ChildContent>
+                            </Dropdown>
+                            @if (validator.ParentError is not null)
+                            {
+                                <div class="invalid-feedback d-block">@validator.ParentError</div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label for="category-active" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary" title="An inactive category keeps its history but can't be picked for new movements.">
+                            Active
+                        </label>
+                        <div class="col-sm-9 d-flex align-items-center">
+                            <input id="category-active" type="checkbox" class="form-check-input m-0" @bind="form.Active" />
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <aside class="col-md-3 side-panel d-flex flex-column gap-3 p-4 border-top small text-body-emphasis tnum">
+                <div>
+                    <div class="text-body-secondary">For</div>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <span class="dot" style="@($"--tile: {CategoryLook.FlowColor(flow)}")"></span>
+                        @CategoryLook.FlowName(flow)
+                    </span>
+                </div>
+                @if (current is { } c)
+                {
+                    <span class="d-inline-flex flex-wrap align-items-center gap-2 fw-semibold">
+                        <span class="dot text-@(CategoryLook.StatusColor(c.Status))-emphasis"></span>
+                        @CategoryLook.StatusName(c.Status)
+                    </span>
+                    <div>
+                        <div class="text-body-secondary">Created</div>
+                        @c.CreationDate.ToString("d MMM yyyy")
+                    </div>
+                    <div>
+                        <div class="text-body-secondary">Last updated</div>
+                        @c.UpdatedDate.ToLocalTime().ToString("d MMM yyyy, HH:mm")
+                    </div>
+                    @if (c.InactiveDate is { } inactive)
+                    {
+                        <div>
+                            <div class="text-body-secondary">Inactive since</div>
+                            @inactive.ToString("d MMM yyyy")
+                        </div>
+                    }
+                    @if (c.DeletedDate is { } deleted)
+                    {
+                        <div>
+                            <div class="text-body-secondary">Deleted on</div>
+                            @deleted.ToString("d MMM yyyy")
+                        </div>
+                    }
+
+                    <div class="mt-auto d-flex flex-column align-items-start gap-1">
+                        @if (c.IsDeleted)
+                        {
+                            <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" title="Brings the category back as published." disabled="@busy" @onclick="restore">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                Restore
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-danger-emphasis text-start" title="Removes the category forever. This cannot be undone." disabled="@busy" @onclick="askPurge">
+                                <i class="bi bi-x-octagon"></i>
+                                Delete permanently
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" title="@(c.IsDraft ? "Publishing makes this category available for movements." : "The category stops being offered for new movements until it is published again.")"
+                                    disabled="@busy" @onclick="() => setDraft(!c.IsDraft)">
+                                <i class="bi bi-@(c.IsDraft ? "send" : "pencil")"></i>
+                                @(c.IsDraft ? "Publish" : "Move to draft")
+                            </button>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-danger-emphasis" title="It goes to the deleted categories and can be restored later." disabled="@busy" @onclick="askDelete">
+                                <i class="bi bi-trash3"></i>
+                                Delete
+                            </button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <span class="d-inline-flex align-items-center gap-2 fw-semibold"><span class="dot text-body-secondary"></span>New</span>
+                }
+            </aside>
+        </div>
+    </ChildContent>
+    <Footer>
+        @if (current is not { IsDeleted: true })
+        {
+            <button type="button" class="btn btn-primary" disabled="@busy" @onclick="() => SaveEntry(false)">@(isNewEntry ? "Create" : "Save")</button>
+            @if (isNewEntry)
+            {
+                <button type="button" class="btn btn-outline-secondary" disabled="@busy" @onclick="() => SaveEntry(true)">Save as draft</button>
+            }
+            @if (current is { Kind: CategoryKind.Simple })
+            {
+                <button type="button" class="btn btn-outline-secondary" title="Creates a new subcategory that belongs to this category." disabled="@busy" @onclick="addSubcategory">
+                    <i class="bi bi-diagram-2"></i>
+                    Add subcategory
+                </button>
+            }
+        }
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">@(isNewEntry ? "Cancel" : "Close")</button>
+    </Footer>
+</EntryModal>
+
+@if (confirm == CategoryFormConfirm.DeleteConfirmationBox)
+{
+    <ConfirmDialog Title="@($"Delete the category “{current!.Name}”?")" Message="It stops being offered for movements. You can restore it later."
+                   ConfirmText="Delete" CancelText="Cancel" Busy="busy"
+                   OnConfirm="DeleteEntry" OnCancel="cancelConfirm" />
+}
+else if (confirm == CategoryFormConfirm.PurgeConfirmationBox)
+{
+    <ConfirmDialog Title="@($"Permanently delete “{current!.Name}”?")" Message="This cannot be undone."
+                   ConfirmText="Delete permanently" CancelText="Cancel" Busy="busy"
+                   OnConfirm="PurgeEntry" OnCancel="cancelConfirm" />
+}
+
+@code {
+    [Parameter] public Category? Category { get; set; }
+    [Parameter] public CategoryFlow Flow { get; set; }
+    [Parameter] public int? Parent { get; set; }
+    [Parameter] public EventCallback<Category> OnAddSubcategory { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnSaved { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private enum CategoryFormConfirm { DeleteConfirmationBox, PurgeConfirmationBox }
+
+    private sealed class CategoryForm
+    {
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = CategoryLook.Icons[0];
+        public CategoryKind Kind { get; set; } = CategoryKind.Simple;
+        public int? Parent { get; set; }
+        public bool Active { get; set; } = true;
+
+        public static CategoryForm From(Category category) => new()
+        {
+            Name = category.Name,
+            Icon = category.Icon,
+            Kind = category.Kind,
+            Parent = category.Parent,
+            Active = category.Active,
+        };
+    }
+
+    private sealed class CategoryFormValidator
+    {
+        public string? NameError { get; private set; }
+        public string? ParentError { get; private set; }
+
+        public bool Handle(DomainException ex)
+        {
+            switch (ex.Field)
+            {
+                case DomainField.Name:
+                    NameError = ex.Message;
+                    return true;
+                case DomainField.Parent:
+                    ParentError = ex.Message;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public void ClearName() => NameError = null;
+
+        public void ClearParent() => ParentError = null;
+    }
+
+    private bool isNewEntry => Category is null;
+
+    private ClaimsPrincipal actor = new();
+    private Category? current;
+    private CategoryFlow flow;
+    private CategoryForm form = new();
+    private List<Category> parents = [];
+    private readonly CategoryFormValidator validator = new();
+    private bool busy;
+    private CategoryFormConfirm? confirm;
+
+    private long workspace => WsState.Current!.Id;
+
+    private bool locked => current?.IsDeleted == true;
+
+    private bool isSubcategory => form.Kind == CategoryKind.Subcategory;
+
+    private Category? parent => parents.FirstOrDefault(p => p.ID == form.Parent);
+
+    private string title => isNewEntry
+        ? $"New {(flow == CategoryFlow.Income ? "income" : "expense")} category"
+        : "Edit category";
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        current = Category;
+        flow = current?.Flow ?? Flow;
+        if (current is { } c)
+            form = CategoryForm.From(c);
+        else if (Parent is { } parentId)
+        {
+            form.Kind = CategoryKind.Subcategory;
+            form.Parent = parentId;
+        }
+        loadParents();
+    }
+
+    private void loadParents()
+    {
+        try
+        {
+            parents = Categories.List(workspace, flow, actor)
+                .Where(c => c.Kind == CategoryKind.Simple && c.ID != current?.ID)
+                .ToList();
+        }
+        catch (DomainException ex)
+        {
+            parents = [];
+            Toasts.Error(ex.Message);
+        }
+    }
+
+    private Task SaveEntry(bool draft) => close(() =>
+    {
+        var parentId = form.Kind == CategoryKind.Subcategory ? form.Parent : null;
+        if (isNewEntry)
+        {
+            var created = Categories.Create(workspace, flow, form.Kind, parentId, form.Name, form.Icon, form.Active, draft, actor);
+            return draft ? $"Draft {created.Name} saved." : $"Category {created.Name} created.";
+        }
+        Categories.Update(workspace, current!.ID, form.Kind, parentId, form.Name, form.Icon, form.Active, actor);
+        return "Category saved.";
+    });
+
+    private Task DeleteEntry() => close(() =>
+    {
+        Categories.Delete(workspace, current!.ID, actor);
+        return $"Category {current.Name} deleted.";
+    });
+
+    private Task PurgeEntry() => close(() =>
+    {
+        Categories.Purge(workspace, current!.ID, actor);
+        return $"Category “{current.Name}” permanently deleted.";
+    });
+
+    private Task setDraft(bool draft) => stay(() =>
+    {
+        Categories.SetDraft(workspace, current!.ID, draft, actor);
+        return draft ? $"Category {current.Name} moved to draft." : $"Category {current.Name} published.";
+    });
+
+    private Task restore() => stay(() =>
+    {
+        Categories.Restore(workspace, current!.ID, actor);
+        return $"Category “{current.Name}” restored.";
+    });
+
+    private Task close(Func<string> action) => run(async () => await OnSaved.InvokeAsync(action()));
+
+    private Task stay(Func<string> action) => run(async () =>
+    {
+        var message = action();
+        current = Categories.Get(workspace, current!.ID, actor);
+        Toasts.Success(message);
+        await OnChanged.InvokeAsync();
+    });
+
+    private async Task run(Func<Task> action)
+    {
+        busy = true;
+        try
+        {
+            await action();
+        }
+        catch (DomainException ex)
+        {
+            if (locked || !validator.Handle(ex))
+                Toasts.Error(ex.Message);
+        }
+        finally
+        {
+            busy = false;
+            confirm = null;
+        }
+    }
+
+    private void pickIcon(string option) => form.Icon = option;
+
+    private void pickKind(CategoryKind kind)
+    {
+        form.Kind = kind;
+        validator.ClearParent();
+    }
+
+    private void pickParent(int id)
+    {
+        form.Parent = id;
+        validator.ClearParent();
+    }
+
+    private Task addSubcategory() => OnAddSubcategory.InvokeAsync(current!);
+
+    private void askDelete() => confirm = CategoryFormConfirm.DeleteConfirmationBox;
+
+    private void askPurge() => confirm = CategoryFormConfirm.PurgeConfirmationBox;
+
+    private void cancelConfirm() => confirm = null;
+}

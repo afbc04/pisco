@@ -1,0 +1,12 @@
+@namespace Pisco.Components.Finance
+
+<span class="cat-icon @CategoryLook.KindClass(Kind) @Class" style="@($"--cc: {CategoryLook.FlowColor(Flow)}")" title="@CategoryLook.KindName(Kind)" aria-hidden="true">
+    <i class="@($"bi bi-{Icon}")"></i>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Icon { get; set; } = "";
+    [Parameter] public CategoryKind Kind { get; set; }
+    [Parameter] public CategoryFlow Flow { get; set; }
+    [Parameter] public string? Class { get; set; }
+}

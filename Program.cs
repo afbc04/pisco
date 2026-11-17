@@ -59,6 +59,8 @@ builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<WorkspaceState>();
 builder.Services.AddScoped<WalletRepository>();
 builder.Services.AddScoped<WalletManager>();
+builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<CategoryManager>();
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddSingleton<AdminPresence>();
 builder.Services.AddScoped<PresenceCircuit>();

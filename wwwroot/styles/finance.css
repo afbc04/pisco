@@ -42,38 +42,108 @@
     width: 19rem;
 }
 
-.wallets-modal .editor-content {
+.manage-modal .editor-content {
     display: flex;
     flex-direction: column;
 }
 
-.wallets-table {
+.manage-table {
     min-height: 0;
 }
 
-.wallets-table thead th {
+.manage-table thead th {
     position: sticky;
     top: 0;
     z-index: 1;
     background: var(--surface);
 }
 
-.wallet-editor .editor-content {
+.side-editor .editor-content {
     display: flex;
     padding: 0;
 }
 
 @media (min-width: 768px) {
-    .editor-modal.is-small.wallet-editor {
+    .editor-modal.is-small.side-editor {
         width: min(860px, calc(100vw - 3rem));
     }
 
-    .wallet-editor .editor-content {
+    .side-editor .editor-content {
         min-height: 22rem;
     }
 
-    .wallet-side {
+    .side-panel {
         border-top: none !important;
         border-left: 1px solid var(--divider);
     }
+}
+
+.cat-icon {
+    --size: 2rem;
+    --tint: color-mix(in srgb, var(--cc) 16%, transparent);
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 0.5rem;
+    background: var(--tint);
+    color: var(--cc);
+    font-size: 1rem;
+}
+
+.cat-icon.is-composite {
+    background: conic-gradient(color-mix(in srgb, var(--cc) 40%, transparent), color-mix(in srgb, var(--primary) 30%, transparent), color-mix(in srgb, var(--cc) 15%, transparent), color-mix(in srgb, var(--cc) 40%, transparent));
+    color: var(--heading);
+}
+
+.cat-icon.is-simple {
+    background: linear-gradient(var(--cc), var(--cc)) bottom / 50% 2px no-repeat, var(--tint);
+}
+
+.cat-icon.is-subcategory {
+    --size: 1.6rem;
+    font-size: 0.8rem;
+    background: radial-gradient(circle, var(--cc) 1.5px, transparent 2px) bottom 1px center / 5px 5px no-repeat, var(--tint);
+}
+
+.cat-icon.is-large {
+    --size: 2.375rem;
+}
+
+.tree-toggle {
+    flex: 0 0 auto;
+    width: 1rem;
+    display: inline-flex;
+    justify-content: center;
+}
+
+.tree-line {
+    position: relative;
+    flex: 0 0 auto;
+    width: 1.25rem;
+    align-self: stretch;
+    margin-block: -0.5rem;
+}
+
+.tree-line::before {
+    content: "";
+    position: absolute;
+    left: 0.55rem;
+    top: 0;
+    height: 50%;
+    width: 0.6rem;
+    border-left: 1.5px solid var(--border-color);
+    border-bottom: 1.5px solid var(--border-color);
+    border-bottom-left-radius: 0.3rem;
+}
+
+.tree-line.is-mid::after {
+    content: "";
+    position: absolute;
+    left: 0.55rem;
+    top: 50%;
+    bottom: 0;
+    border-left: 1.5px solid var(--border-color);
 }
