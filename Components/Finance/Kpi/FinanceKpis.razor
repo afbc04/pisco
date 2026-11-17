@@ -2,7 +2,9 @@
 @using System.Security.Claims
 @implements IDisposable
 @inject WorkspaceState WsState
+@inject WalletManager Wallets
 @inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
 
 <div class="row g-3 mb-4">
 
@@ -18,6 +20,16 @@
         <Value>@(0m.ToString("N2")) €</Value>
         <Foot>@noPrevious</Foot>
     </FinanceKpiCard>
+
+    <FinanceKpiCard Label="Total balance" Icon="bi bi-safe2" Color="var(--balance)">
+        <Action>@tagsButton</Action>
+        <Value>@WalletMoney.Format(balance)</Value>
+        <Foot><span>Initial balance of the published wallets</span></Foot>
+    </FinanceKpiCard>
+
+    <div class="col-sm-6 col-xxl-3">
+        <div class="panel-card h-100"></div>
+    </div>
 
     <!--
     <FinanceKpiCard Label="Result" Icon="bi bi-plus-slash-minus" Color="var(--primary)">
@@ -43,9 +55,17 @@
     <CategoriesModal Flow="flow" OnClose="closeCategories" />
 }
 
+@if (tagsOpen)
+{
+    <TagsModal OnClose="closeTags" />
+}
+
 @code {
     private bool signedIn;
+    private ClaimsPrincipal actor = new();
     private CategoryFlow? categoriesFlow;
+    private bool tagsOpen;
+    private long balance;
 
     private static DateOnly endOfMonth
     {
@@ -62,16 +82,51 @@
             <i class="bi bi-tags"></i><span>Categories</span>
         </button>;
 
+    private RenderFragment? tagsButton => !signedIn || WsState.Current is null ? null :
+        @<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill ms-auto py-0 small" title="Manage tags"
+                 @onclick="openTags">
+            <i class="bi bi-hash"></i><span>Tags</span>
+        </button>;
+
     protected override async Task OnInitializedAsync()
     {
         WsState.Changed += onWsChanged;
-        signedIn = (await AuthProvider.GetAuthenticationStateAsync()).User.IsSignedIn();
+        Wallets.Changed += onWalletsChanged;
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        signedIn = actor.IsSignedIn();
         await WsState.EnsureLoadedAsync();
+        loadBalance();
+    }
+
+    private void loadBalance()
+    {
+        if (WsState.Current is not { } ws)
+        {
+            balance = 0;
+            return;
+        }
+        try
+        {
+            balance = Wallets.TotalBalance(ws.Id, actor);
+        }
+        catch (DomainException ex)
+        {
+            balance = 0;
+            Toasts.Error(ex.Message);
+        }
     }
 
     private void onWsChanged() => InvokeAsync(() =>
     {
         categoriesFlow = null;
+        tagsOpen = false;
+        loadBalance();
+        StateHasChanged();
+    });
+
+    private void onWalletsChanged() => InvokeAsync(() =>
+    {
+        loadBalance();
         StateHasChanged();
     });
 
@@ -79,7 +134,15 @@
 
     private void closeCategories() => categoriesFlow = null;
 
-    public void Dispose() => WsState.Changed -= onWsChanged;
+    private void openTags() => tagsOpen = true;
+
+    private void closeTags() => tagsOpen = false;
+
+    public void Dispose()
+    {
+        WsState.Changed -= onWsChanged;
+        Wallets.Changed -= onWalletsChanged;
+    }
 
     private RenderFragment noPrevious =>
         @<span><span class="badge bg-body-secondary text-body-secondary">—</span> no data in the previous period</span>;

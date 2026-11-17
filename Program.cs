@@ -61,6 +61,8 @@ builder.Services.AddScoped<WalletRepository>();
 builder.Services.AddScoped<WalletManager>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<CategoryManager>();
+builder.Services.AddScoped<TagRepository>();
+builder.Services.AddScoped<TagManager>();
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddSingleton<AdminPresence>();
 builder.Services.AddScoped<PresenceCircuit>();

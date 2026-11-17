@@ -31,3 +31,11 @@ CREATE TABLE IF NOT EXISTS categories (
     FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES categories (id)
 );
+
+CREATE TABLE IF NOT EXISTS tags (
+    id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    workspace_id bigint NOT NULL,
+    name varchar(24) NOT NULL,
+    color char(7) NOT NULL,
+    FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE
+);

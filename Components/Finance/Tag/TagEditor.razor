@@ -1,0 +1,141 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject TagManager Tags
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="@(isNewEntry ? "New tag" : "Edit tag")" Small="true" OnClose="OnClose">
+    <ChildContent>
+        <div class="p-4">
+            <div class="row mb-3">
+                <label for="tag-name" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                    Name
+                </label>
+                <div class="col-sm-9">
+                    <input id="tag-name" class="form-control @(nameError is null ? null : "is-invalid")" maxlength="@Tag.NameLengthMax"
+                           @bind="form.Name" @bind:event="oninput" @bind:after="clearName" autofocus />
+                    @if (nameError is not null)
+                    {
+                        <div class="invalid-feedback d-block">@nameError</div>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label for="tag-color" class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                    Colour
+                </label>
+                <div class="col-sm-9 d-flex align-items-center gap-2">
+                    <input id="tag-color" type="color" class="form-control form-control-color" title="Pick a colour" @bind="form.Color" @bind:event="oninput" />
+                    <span class="text-body-secondary small text-uppercase tnum">@form.Color</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <span class="col-sm-3 col-form-label col-form-label-sm text-sm-end fw-semibold text-body-secondary">
+                    Preview
+                </span>
+                <div class="col-sm-9 d-flex align-items-center">
+                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 text-body-emphasis bg-body-tertiary">
+                        <span class="dot" style="@($"--tile: {form.Color}")"></span>
+                        @(string.IsNullOrWhiteSpace(form.Name) ? "Tag" : form.Name.Trim())
+                    </span>
+                </div>
+            </div>
+        </div>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-primary" disabled="@busy" @onclick="SaveEntry">@(isNewEntry ? "Create" : "Save")</button>
+        @if (!isNewEntry)
+        {
+            <button type="button" class="btn btn-outline-danger" disabled="@busy" @onclick="askDelete">
+                <i class="bi bi-trash3"></i>
+                Delete
+            </button>
+        }
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">@(isNewEntry ? "Cancel" : "Close")</button>
+    </Footer>
+</EntryModal>
+
+@if (confirmDelete)
+{
+    <ConfirmDialog Title="@($"Delete the tag “{Tag!.Name}”?")" Message="This cannot be undone."
+                   ConfirmText="Delete" CancelText="Cancel" Busy="busy"
+                   OnConfirm="DeleteEntry" OnCancel="cancelDelete" />
+}
+
+@code {
+    [Parameter] public Tag? Tag { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnSaved { get; set; }
+
+    private const string DefaultColor = "#89b4fa";
+
+    private sealed class TagForm
+    {
+        public string Name { get; set; } = "";
+        public string Color { get; set; } = DefaultColor;
+    }
+
+    private bool isNewEntry => Tag is null;
+
+    private ClaimsPrincipal actor = new();
+    private TagForm form = new();
+    private string? nameError;
+    private bool busy;
+    private bool confirmDelete;
+
+    private long workspace => WsState.Current!.Id;
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        if (Tag is { } t)
+            form = new TagForm { Name = t.Name, Color = t.Color };
+    }
+
+    private Task SaveEntry() => run(() =>
+    {
+        if (isNewEntry)
+        {
+            var created = Tags.Create(workspace, form.Name, form.Color, actor);
+            return $"Tag {created.Name} created.";
+        }
+        Tags.Update(workspace, Tag!.ID, form.Name, form.Color, actor);
+        return "Tag saved.";
+    });
+
+    private Task DeleteEntry() => run(() =>
+    {
+        Tags.Delete(workspace, Tag!.ID, actor);
+        return $"Tag {Tag.Name} deleted.";
+    });
+
+    private async Task run(Func<string> action)
+    {
+        busy = true;
+        try
+        {
+            await OnSaved.InvokeAsync(action());
+        }
+        catch (DomainException ex)
+        {
+            if (ex.Field == DomainField.Name)
+                nameError = ex.Message;
+            else
+                Toasts.Error(ex.Message);
+        }
+        finally
+        {
+            busy = false;
+            confirmDelete = false;
+        }
+    }
+
+    private void clearName() => nameError = null;
+
+    private void askDelete() => confirmDelete = true;
+
+    private void cancelDelete() => confirmDelete = false;
+}

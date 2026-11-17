@@ -9,6 +9,7 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
     public DbSet<Config> Config => Set<Config>();
     public DbSet<Wallet> Wallets => Set<Wallet>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Tag> Tags => Set<Tag>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -87,6 +88,19 @@ public class PiscoDbContext(DbContextOptions<PiscoDbContext> options) : DbContex
 
             category.HasOne<Workspace>().WithMany().HasForeignKey(c => c.Workspace).OnDelete(DeleteBehavior.Cascade);
             category.HasOne<Category>().WithMany().HasForeignKey(c => c.Parent).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        model.Entity<Tag>(tag =>
+        {
+            tag.ToTable("tags");
+            tag.HasKey(t => t.ID);
+
+            tag.Property(t => t.ID).HasColumnName("id").UseIdentityAlwaysColumn();
+            tag.Property(t => t.Workspace).HasColumnName("workspace_id");
+            tag.Property(t => t.Name).HasColumnName("name").HasMaxLength(Tag.NameLengthMax).IsRequired();
+            tag.Property(t => t.Color).HasColumnName("color").HasMaxLength(Tag.ColorLength).IsFixedLength().IsRequired();
+
+            tag.HasOne<Workspace>().WithMany().HasForeignKey(t => t.Workspace).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

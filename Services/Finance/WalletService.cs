@@ -6,6 +6,11 @@ namespace Pisco.Services.Finance;
 
 public class WalletManager(WalletRepository wallets)
 {
+    public event Action? Changed;
+
+    public long TotalBalance(long workspaceId, ClaimsPrincipal actor) =>
+        List(workspaceId, actor).Where(w => w.IsPublished).Sum(w => w.InitialBalance);
+
     public List<Wallet> List(long workspaceId, ClaimsPrincipal actor)
     {
         ensureCanRead(workspaceId, actor);
@@ -24,6 +29,7 @@ public class WalletManager(WalletRepository wallets)
         var wallet = new Wallet(workspaceId, name, color, icon, initialBalance, active, draft);
         ensureNameFree(wallet);
         wallets.Add(wallet.ID, wallet);
+        Changed?.Invoke();
         return wallet;
     }
 
@@ -36,6 +42,7 @@ public class WalletManager(WalletRepository wallets)
             wallet.Active = active;
         ensureNameFree(wallet);
         wallets[wallet.ID] = wallet;
+        Changed?.Invoke();
     }
 
     public void SetDraft(long workspaceId, int id, bool draft, ClaimsPrincipal actor)
@@ -44,6 +51,7 @@ public class WalletManager(WalletRepository wallets)
         var wallet = find(workspaceId, id);
         wallet.Status = draft ? WalletStatus.Draft : WalletStatus.Published;
         wallets[wallet.ID] = wallet;
+        Changed?.Invoke();
     }
 
     public void Delete(long workspaceId, int id, ClaimsPrincipal actor)
@@ -52,6 +60,7 @@ public class WalletManager(WalletRepository wallets)
         var wallet = find(workspaceId, id);
         wallet.Status = WalletStatus.Deleted;
         wallets[wallet.ID] = wallet;
+        Changed?.Invoke();
     }
 
     public List<Wallet> ListDeleted(long workspaceId, ClaimsPrincipal actor)
@@ -67,6 +76,7 @@ public class WalletManager(WalletRepository wallets)
         wallet.Status = WalletStatus.Published;
         ensureNameFree(wallet);
         wallets[wallet.ID] = wallet;
+        Changed?.Invoke();
     }
 
     public void Purge(long workspaceId, int id, ClaimsPrincipal actor)
@@ -74,6 +84,7 @@ public class WalletManager(WalletRepository wallets)
         ensureCanWrite(workspaceId, actor);
         var wallet = findDeleted(workspaceId, id);
         wallets.Remove(wallet.ID);
+        Changed?.Invoke();
     }
 
     private Wallet findDeleted(long workspaceId, int id) =>

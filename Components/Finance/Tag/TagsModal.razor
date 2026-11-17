@@ -1,0 +1,109 @@
+@namespace Pisco.Components.Finance
+@using System.Security.Claims
+@inject TagManager Tags
+@inject WorkspaceState WsState
+@inject AuthenticationStateProvider AuthProvider
+@inject ToastService Toasts
+
+<EntryModal Title="Tags" Small="true" OnClose="OnClose">
+    <ChildContent>
+        <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+            <div class="filter filter-search flex-grow-1">
+                <i class="bi bi-search"></i>
+                <input type="search" class="form-control" placeholder="Search by name" aria-label="Search by name"
+                       value="@search" @oninput="onSearch" />
+            </div>
+            <button type="button" class="btn btn-primary btn-sm text-nowrap" @onclick="openNew">
+                <i class="bi bi-plus-lg"></i> New tag
+            </button>
+        </div>
+
+        @if (all is null)
+        {
+            <p class="text-body-secondary text-center my-4">Loading…</p>
+        }
+        else if (filtered.Count == 0)
+        {
+            <div class="d-flex flex-column align-items-center gap-2 py-5 px-3 text-body-secondary text-center">
+                <i class="bi bi-@(all.Count == 0 ? "hash" : "funnel") fs-4"></i>
+                <span>@(all.Count == 0 ? "No tags yet." : "No tags match the search.")</span>
+            </div>
+        }
+        else
+        {
+            <ul class="row-list is-flush">
+                @foreach (var tag in filtered)
+                {
+                    <li>
+                        <button type="button" class="row-list-item" title="Edit tag" @onclick="() => openEditor(tag)">
+                            <span class="dot" style="@($"--tile: {tag.Color}")"></span>
+                            <span class="row-list-main"><Highlight Text="@tag.Name" Query="@search" /></span>
+                            <i class="bi bi-chevron-right row-list-chev"></i>
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-outline-secondary ms-auto" @onclick="OnClose">Close</button>
+    </Footer>
+</EntryModal>
+
+@if (editorOpen)
+{
+    <TagEditor Tag="editing" OnClose="closeEditor" OnSaved="saved" />
+}
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ClaimsPrincipal actor = new();
+    private List<Tag>? all;
+    private string search = "";
+    private bool editorOpen;
+    private Tag? editing;
+
+    private List<Tag> filtered => all!
+        .Where(t => search.Length == 0 || t.Name.Contains(search.Trim(), StringComparison.CurrentCultureIgnoreCase))
+        .OrderBy(t => t.Name, StringComparer.CurrentCultureIgnoreCase)
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        actor = (await AuthProvider.GetAuthenticationStateAsync()).User;
+        load();
+    }
+
+    private void load()
+    {
+        try
+        {
+            all = Tags.List(WsState.Current!.Id, actor);
+        }
+        catch (DomainException ex)
+        {
+            all = [];
+            Toasts.Error(ex.Message);
+        }
+    }
+
+    private void onSearch(ChangeEventArgs e) => search = e.Value?.ToString() ?? "";
+
+    private void openNew() => openEditor(null);
+
+    private void openEditor(Tag? tag)
+    {
+        editing = tag;
+        editorOpen = true;
+    }
+
+    private void saved(string message)
+    {
+        editorOpen = false;
+        load();
+        Toasts.Success(message);
+    }
+
+    private void closeEditor() => editorOpen = false;
+}
